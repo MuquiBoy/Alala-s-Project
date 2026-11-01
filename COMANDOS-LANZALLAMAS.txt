@@ -1,0 +1,98 @@
+﻿ALALA'S CHILDREN — VOICEATTACK: LANZALLAMAS
+Biblioteca integrada de órdenes de entrenador.
+
+ESTADO
+Las frases enumeradas están integradas en el vocabulario real de la demo.
+El sistema tolera mayúsculas, tildes, puntuación, espacios y repeticiones inmediatas.
+Gritar o hablar con otra entonación no modifica la potencia ni la duración del ataque.
+La precisión con cada voz, micrófono y ambiente debe comprobarse jugando.
+
+REGLAS DE COMBATE
+Di una orden breve y completa. Las preguntas, negaciones, descripciones y frases ambiguas se rechazan.
+Las repeticiones enfáticas dentro de una misma intervención cuentan como una sola orden.
+Una nueva intervención puede dar otra orden; el ejecutor sigue respetando el estado y la recarga.
+No se generan fórmulas de cortesía: se priorizan órdenes tácticas propias de un combate PvP.
+
+NOMBRE O LLAMADA BREVE
+• lanzallamas
+• lanzallama
+• llamas
+• fuego
+• lanza llamas
+• lanza flamas
+
+ORDEN DE ACTIVACIÓN
+• usa lanzallamas
+• usa el lanzallamas
+• usa el ataque lanzallamas
+• ahora usa lanzallamas
+• ahora usa el lanzallamas
+• ahora usa el ataque lanzallamas
+• activa lanzallamas
+• activa el lanzallamas
+• activa el ataque lanzallamas
+• ahora activa lanzallamas
+• ahora activa el lanzallamas
+• ahora activa el ataque lanzallamas
+• utiliza lanzallamas
+• utiliza el lanzallamas
+• utiliza el ataque lanzallamas
+• ahora utiliza lanzallamas
+• ahora utiliza el lanzallamas
+• ahora utiliza el ataque lanzallamas
+• lanza fuego
+• lanza las llamas
+• escupe fuego
+• escupe llamas
+• dispara llamas
+• fuego ahora
+
+ORDEN DE ATAQUE
+• ataca con lanzallamas
+• ataca con el lanzallamas
+• ataca con llamas
+• ataca ahora con llamas
+• ahora ataca con llamas
+• ahora ataca con lanzallamas
+• ataca usando lanzallamas
+• atacar con lanzallamas
+• lánzale llamas
+• quémalo con fuego
+• dale con lanzallamas
+• dale con llamas
+
+ORDEN DE CONTRAATAQUE
+• contraataca usando lanzallamas
+• contraataca con lanzallamas
+• contraataca con llamas
+• contraataca con fuego
+• contraatacar con lanzallamas
+• contrataca usando lanzallamas
+• contrataca con lanzallamas
+• contrataca con llamas
+• contrataca con fuego
+• responde con fuego
+• responde con llamas
+• devuélvele el ataque con llamas
+• repele su ataque con fuego
+
+URGENCIA O REPETICIÓN ENFÁTICA
+• llamas llamas
+• fuego fuego
+• lanzallamas lanzallamas
+• lanza llamas lanza llamas
+• ataca ataca con llamas
+• contraataca contraataca con fuego
+• contrataca contrataca con fuego
+• ahora ahora lanzallamas
+• dale llamas
+
+RECONOCIMIENTO DE ENTONACIÓN Y FUROR PvP
+El motor de voz convierte audio en texto y el intérprete evalúa la frase normalizada.
+El volumen, la velocidad o el tono no son órdenes distintas. El ajuste automático de entrada ayuda con voces fuertes.
+Formas como «llamas, llamas» y «lanza llamas, lanza llamas» están incluidas para el habla urgente.
+Si el reconocedor divide una repetición del mismo turno de voz, la canalización conserva una sola solicitud.
+
+TOTAL: 64 expresiones integradas.
+Fuente única: src/attacks/flamethrower/commands.ts
+Generar de nuevo: pnpm commands:export

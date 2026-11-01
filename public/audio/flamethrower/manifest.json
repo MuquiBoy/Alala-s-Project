@@ -1,0 +1,32 @@
+{
+  "license": "CC0-1.0",
+  "author": "Spring Spring",
+  "sourcePage": "https://opengameart.org/content/synthesized-fire-sound-effect",
+  "sourceFile": "https://opengameart.org/sites/default/files/fire_sound_effect_0.mp3",
+  "sourceSha256": "aad754eed62c8016023211cf9a187e62f99253f67aa6912b605f99447e6ce3cb",
+  "processing": "Mono 22050 Hz, DC removal, 2600 Hz low-pass, soft saturation, seamless crossfade loop, short electronic sweeps authored for this demo, attack/release envelopes.",
+  "evaluation": "Waveform, spectrum, RMS, peak and offline decoding checked without audible playback. Aesthetic listening and speaker/microphone echo require manual testing.",
+  "assets": [
+    {
+      "file": "ignite.wav",
+      "seconds": 0.22,
+      "peak": 0.6,
+      "rms": 0.1501,
+      "sha256": "9e2ac3ca5f77946623eb4b10377042ed047799b76d5a42e7f1a2e1d190628629"
+    },
+    {
+      "file": "sustain.wav",
+      "seconds": 1.85,
+      "peak": 0.5413,
+      "rms": 0.1114,
+      "sha256": "74e7d06fae7901c63caceeb4f32e49c65313c465f918b2030b871d99d251d735"
+    },
+    {
+      "file": "extinguish.wav",
+      "seconds": 0.34,
+      "peak": 0.1159,
+      "rms": 0.0267,
+      "sha256": "47ef7ec3cd635353d44619fb8b7b4a01459496c4b76e93a867b41cea6072d42d"
+    }
+  ]
+}

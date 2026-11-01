@@ -1,0 +1,48 @@
+{
+  "author": "AudioPapkin",
+  "license": "CC0-1.0",
+  "sourcePage": "https://freesound.org/people/AudioPapkin/sounds/712066/",
+  "sourceFile": "https://cdn.freesound.org/previews/712/712066_8698658-hq.mp3",
+  "sourceFormat": "Public high-quality MP3 preview of Monster footsteps on gravel; original WAV was not downloaded.",
+  "sourceSha256": "3f97f9855c6b2967bb099a6df2951898feafe0adf457ec4d5391cfa9b71a70e8",
+  "processing": "Four contact crops, pitch reduction, 30 Hz high-pass / 1800 Hz low-pass, bass emphasis, original short resonant layer, fades, soft saturation, 12-bit grain, mono PCM16 22050 Hz.",
+  "evaluation": "Waveform, spectrum, peak and decoding only; aesthetic listening is pending the player's test.",
+  "landing": {
+    "file": "heavy-landing.wav",
+    "source": "CC0 derivatives heavy-step-01.wav and heavy-step-02.wav in this folder",
+    "processing": "Deterministic 0.72x and 0.78x contact layers, original low-frequency body resonance and short filtered debris, mono PCM16 22050 Hz; regenerate with scripts/prepare_heavy_landing.py",
+    "seconds": 1.05,
+    "rms": 0.264,
+    "sha256": "86bcb593442040181aa552f6bbbc98fcdd30890ac1f4f5224601b1868b51b479"
+  },
+  "assets": [
+    {
+      "file": "heavy-step-01.wav",
+      "sourcePeakSeconds": 3.751,
+      "seconds": 0.5926,
+      "rms": 0.2797,
+      "sha256": "45ad38c4a396ee89824def217741694406d6fbd554328645bb294cc39233cf37"
+    },
+    {
+      "file": "heavy-step-02.wav",
+      "sourcePeakSeconds": 7.114,
+      "seconds": 0.5839,
+      "rms": 0.2787,
+      "sha256": "aa8e3b3d71bf726674d96b36a9f78d28a9d6fdf84eea94473c3b9f735e1a8eaf"
+    },
+    {
+      "file": "heavy-step-03.wav",
+      "sourcePeakSeconds": 12.053,
+      "seconds": 0.5755,
+      "rms": 0.2825,
+      "sha256": "333c21ba8cc222166aa8ae363ef3328a79c7766828539816415456b87de87d31"
+    },
+    {
+      "file": "heavy-step-04.wav",
+      "sourcePeakSeconds": 15.395,
+      "seconds": 0.5673,
+      "rms": 0.279,
+      "sha256": "b42b45494bbd51a910cf434725f1054296c6d39f9228efcff936a099a307f3d5"
+    }
+  ]
+}

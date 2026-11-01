@@ -1,0 +1,10 @@
+.combat-build .ability-row { min-height: 48px; }
+.combat-build .ability-row > div { min-width: 0; }
+.combat-build .ability-description { color: #a3b6a0; font-size: 6px; line-height: 1.2; }
+.combat-build .ability-status { color: #d3e2c2; }
+.combat-build .ability-row[data-state=active] .ability-status { color: #ffb578; }
+.training-diagnostic, .combat-build #target-report { white-space: pre-line; font: 10px/1.5 Consolas, monospace; color: #cbd7c2; }
+.training-diagnostic { margin-top: 16px; padding: 12px; border: 1px solid #607059; }
+.training-diagnostic h3 { margin: 0 0 8px; font: 12px Consolas, monospace; color: #d1e9a4; }
+.training-diagnostic p { margin: 7px 0; }
+.combat-build #target-report { margin-top: 10px; max-height: 260px; overflow: auto; }

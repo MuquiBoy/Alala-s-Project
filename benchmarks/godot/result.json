@@ -1,0 +1,15 @@
+{
+  "actors": 4,
+  "engine": "4.6.1-stable (official)",
+  "floor_instances": 625,
+  "gpu_rendering_measured": false,
+  "mean_us": 111.97,
+  "mode": "headless",
+  "p50_us": 109,
+  "p95_us": 125,
+  "physics_backend": "DEFAULT",
+  "scope": "four CharacterBody3D.move_and_slide calls; global physics step is outside this timer",
+  "static_colliders": 6,
+  "ticks": 600,
+  "voice_integration_measured": false
+}

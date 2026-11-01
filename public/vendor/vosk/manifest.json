@@ -1,0 +1,9 @@
+{
+  "upstream": "ccoreilly/vosk-browser",
+  "version": "0.0.8",
+  "license": "Apache-2.0",
+  "modification": "Disable the two IndexedDB filesystem synchronizations; model stays in Worker RAM for the session.",
+  "originalSha256": "29504515526e974f4cb053cf08811c4de5fb2a74007c0a5a957db50eaa8d5d0c",
+  "adaptedSha256": "c9f155906c5394fd91e9413bd4099224d574fe0c325302bd61e95abf276feb10",
+  "acousticWeightsModified": false
+}

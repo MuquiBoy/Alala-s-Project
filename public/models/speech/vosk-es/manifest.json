@@ -1,0 +1,12 @@
+{
+  "name": "vosk-model-small-es-0.42",
+  "language": "es",
+  "source": "https://alphacephei.com/vosk/models/vosk-model-small-es-0.42.zip",
+  "license": "Apache-2.0",
+  "license_reference": "https://alphacephei.com/vosk/models",
+  "original_sha256": "09b239888f633ef2f0b4e09736e3d9936acfd810bc65d53fad45261762c6511f",
+  "archive_sha256": "8b25b66f18a2e7443e480fd2d195830635b50c6819ca292bca2b73bbafea6834",
+  "archive_bytes": 39748878,
+  "adaptation": "Original acoustic weights, repackaged to tar.gz. Command and negative vocabulary generated at runtime.",
+  "trained_on_player_audio": false
+}

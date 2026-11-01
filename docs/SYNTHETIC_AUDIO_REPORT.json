@@ -1,0 +1,397 @@
+{
+  "version": "0.3.0",
+  "kind": "synthetic-audio-integration-test",
+  "acousticValidation": "Human evaluation must be performed and labelled separately from synthetic tests.",
+  "settings": {
+    "engine": "vosk",
+    "language": "es-PE",
+    "mode": "precise"
+  },
+  "summary": {
+    "accepted": 4,
+    "rejected": 0
+  },
+  "records": [
+    {
+      "id": "vosk:3:0",
+      "text": "ataca con llamas",
+      "abilityId": "flamethrower",
+      "normalized": "ataca con llamas",
+      "matchedAlias": "ataca con llamas",
+      "structure": "orden de ataque",
+      "interpretationMs": 0,
+      "status": "accepted",
+      "reason": "Orden ejecutada.",
+      "source": "final",
+      "speechStartedAt": 62799.30000001192,
+      "firstInterimAt": 64061.80000001192,
+      "finalReceivedAt": 65152.19999998808,
+      "transcriptReceivedAt": 65152.19999998808,
+      "interpretedAt": 65152.30000001192,
+      "requestedAt": 65152.30000001192,
+      "effectStartedAt": 65152.5
+    },
+    {
+      "id": "vosk:3:1",
+      "text": "coraza",
+      "abilityId": "armor_guard",
+      "normalized": "coraza",
+      "matchedAlias": "coraza",
+      "structure": "alias breve",
+      "interpretationMs": 0,
+      "status": "accepted",
+      "reason": "Orden ejecutada.",
+      "source": "final",
+      "speechStartedAt": 68320.5,
+      "firstInterimAt": 68984.10000002384,
+      "finalReceivedAt": 69116.80000001192,
+      "transcriptReceivedAt": 69116.80000001192,
+      "interpretedAt": 69116.90000003576,
+      "requestedAt": 69116.90000003576,
+      "effectStartedAt": 69116.90000003576
+    },
+    {
+      "id": "vosk:3:2",
+      "text": "embestida",
+      "abilityId": "charge_dash",
+      "normalized": "embestida",
+      "matchedAlias": "embestida",
+      "structure": "alias breve",
+      "interpretationMs": 0,
+      "status": "accepted",
+      "reason": "Orden ejecutada.",
+      "source": "final",
+      "speechStartedAt": 70428.30000001192,
+      "firstInterimAt": 70968.90000003576,
+      "finalReceivedAt": 71724,
+      "transcriptReceivedAt": 71724,
+      "interpretedAt": 71724.10000002384,
+      "requestedAt": 71724.10000002384,
+      "effectStartedAt": 71724.10000002384
+    },
+    {
+      "id": "vosk:3:3",
+      "text": "pulso",
+      "abilityId": "thermal_pulse",
+      "normalized": "pulso",
+      "matchedAlias": "pulso",
+      "structure": "alias breve",
+      "interpretationMs": 0,
+      "status": "accepted",
+      "reason": "Orden ejecutada.",
+      "source": "final",
+      "speechStartedAt": 72997.10000002384,
+      "firstInterimAt": 73523.60000002384,
+      "finalReceivedAt": 74158.19999998808,
+      "transcriptReceivedAt": 74158.19999998808,
+      "interpretedAt": 74158.30000001192,
+      "requestedAt": 74158.30000001192,
+      "effectStartedAt": 74158.30000001192
+    }
+  ],
+  "calibration": {
+    "summary": {
+      "trials": 19,
+      "positives": 10,
+      "correct": 10,
+      "wrong": 0,
+      "ignored": 0,
+      "negatives": 9,
+      "falseActivations": 0
+    },
+    "trials": [
+      {
+        "expected": "flamethrower",
+        "predicted": "flamethrower",
+        "outcome": "correct",
+        "text": "ataca con llamas",
+        "confidence": 1,
+        "recognitionMs": 1457
+      },
+      {
+        "expected": "armor_guard",
+        "predicted": "armor_guard",
+        "outcome": "correct",
+        "text": "coraza",
+        "confidence": 1,
+        "recognitionMs": 834.9000000357628
+      },
+      {
+        "expected": "charge_dash",
+        "predicted": "charge_dash",
+        "outcome": "correct",
+        "text": "embestida",
+        "confidence": 1,
+        "recognitionMs": 1057.9000000357628
+      },
+      {
+        "expected": "thermal_pulse",
+        "predicted": "thermal_pulse",
+        "outcome": "correct",
+        "text": "pulso",
+        "confidence": 1,
+        "recognitionMs": 1361.1000000238419
+      },
+      {
+        "expected": "armor_guard",
+        "predicted": "armor_guard",
+        "outcome": "correct",
+        "text": "proteccion",
+        "confidence": 1,
+        "recognitionMs": 1148
+      },
+      {
+        "expected": "charge_dash",
+        "predicted": "charge_dash",
+        "outcome": "correct",
+        "text": "carga",
+        "confidence": 1,
+        "recognitionMs": 924.9000000357628
+      },
+      {
+        "expected": "thermal_pulse",
+        "predicted": "thermal_pulse",
+        "outcome": "correct",
+        "text": "expulsa calor",
+        "confidence": 1,
+        "recognitionMs": 1855.699999988079
+      },
+      {
+        "expected": "flamethrower",
+        "predicted": "flamethrower",
+        "outcome": "correct",
+        "text": "usa lanzallamas",
+        "confidence": 1,
+        "recognitionMs": 1507.5
+      },
+      {
+        "expected": "flamethrower",
+        "predicted": "flamethrower",
+        "outcome": "correct",
+        "text": "escupe fuego",
+        "confidence": 1,
+        "recognitionMs": 1314.699999988079
+      },
+      {
+        "expected": "flamethrower",
+        "predicted": "flamethrower",
+        "outcome": "correct",
+        "text": "ahora usa lanzallamas",
+        "confidence": 1,
+        "recognitionMs": 1539.6000000238419
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "no quiero usar lanzallamas",
+        "confidence": 1,
+        "recognitionMs": 1858.5
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "puedo usar lanzallamas",
+        "confidence": 1,
+        "recognitionMs": 2082.099999964237
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "el ataque se llama lanzallamas",
+        "confidence": 1,
+        "recognitionMs": 2480.100000023842
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "estoy probando si reconoce llamas",
+        "confidence": 0.9938634000000001,
+        "recognitionMs": 2965.099999964237
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "ataca con",
+        "confidence": 1,
+        "recognitionMs": 1187.199999988079
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "no uses lanzallamas",
+        "confidence": 1,
+        "recognitionMs": 1725.1000000238419
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "creo que las llamas son bonitas",
+        "confidence": 1,
+        "recognitionMs": 2231.899999976158
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "como funciona la embestida",
+        "confidence": 0.9116455,
+        "recognitionMs": 2500.199999988079
+      },
+      {
+        "expected": null,
+        "predicted": null,
+        "outcome": "correct-rejection",
+        "text": "coraza el pulso",
+        "confidence": 0.883563,
+        "recognitionMs": 1763
+      }
+    ]
+  },
+  "aliases": {},
+  "timing": "performance.now(), milliseconds, observed events; logical activation is not audio round-trip latency",
+  "humanVoiceTested": false,
+  "syntheticSource": {
+    "voice": "Microsoft Helena Desktop - Spanish (Spain)",
+    "rates": [
+      -1,
+      0,
+      1
+    ],
+    "samples": [
+      {
+        "id": "flame_variant",
+        "text": "Ataca con llamas",
+        "expected": "flamethrower",
+        "rate": 1
+      },
+      {
+        "id": "guard",
+        "text": "Coraza",
+        "expected": "armor_guard",
+        "rate": 0
+      },
+      {
+        "id": "dash",
+        "text": "Embestida",
+        "expected": "charge_dash",
+        "rate": 0
+      },
+      {
+        "id": "pulse",
+        "text": "Pulso térmico",
+        "expected": "thermal_pulse",
+        "rate": 0
+      },
+      {
+        "id": "guard_variant",
+        "text": "Protégete",
+        "expected": "armor_guard",
+        "rate": -1
+      },
+      {
+        "id": "dash_variant",
+        "text": "Carga",
+        "expected": "charge_dash",
+        "rate": 1
+      },
+      {
+        "id": "pulse_variant",
+        "text": "Expulsa calor",
+        "expected": "thermal_pulse",
+        "rate": -1
+      },
+      {
+        "id": "flame_use",
+        "text": "Usa lanzallamas",
+        "expected": "flamethrower",
+        "rate": 0
+      },
+      {
+        "id": "flame_fire",
+        "text": "Escupe fuego",
+        "expected": "flamethrower",
+        "rate": 0
+      },
+      {
+        "id": "flame_now",
+        "text": "Ahora usa lanzallamas",
+        "expected": "flamethrower",
+        "rate": 0
+      },
+      {
+        "id": "negative_intent",
+        "text": "No quiero usar lanzallamas",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "question_use",
+        "text": "Puedo usar lanzallamas",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "description_attack",
+        "text": "El ataque se llama lanzallamas",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "testing",
+        "text": "Estoy probando si reconoce lanzallamas",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "incomplete",
+        "text": "Ataca con",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "negative",
+        "text": "No uses lanzallamas",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "descriptive",
+        "text": "Creo que las llamas son bonitas",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "question",
+        "text": "Cómo funciona la embestida",
+        "expected": "none",
+        "rate": 0
+      },
+      {
+        "id": "ambiguous",
+        "text": "Coraza y pulso",
+        "expected": "none",
+        "rate": 0
+      }
+    ]
+  },
+  "gameplay": {
+    "realAsrToCombatRequests": 4,
+    "movingDuringRecognition": true,
+    "initialZ": 8.5,
+    "finalZ": 1.2735,
+    "physicalMicrophoneUsed": false
+  },
+  "runtimeErrors": [],
+  "graphics": {
+    "quality": "low",
+    "renderer": "Chrome headless SwiftShader software",
+    "realGpuMeasured": false
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "engine": "Rapier 0.21.0 / Node v24.22.1",
+  "mode": "no rendering",
+  "static_colliders": 6,
+  "actors": 4,
+  "ticks": 600,
+  "mean_us": 203.72383333333337,
+  "p50_us": 117.00000000001864,
+  "p95_us": 387.3999999999569,
+  "scope": "four KCC movement queries AND world.step; different scope from Godot timer",
+  "gpu_rendering_measured": false,
+  "voice_integration_measured": false
+}

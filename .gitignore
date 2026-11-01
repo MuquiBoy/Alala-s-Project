@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+work/
+test-results/
+playwright-report/
+benchmarks/godot/.godot/
+public/vendor/vosk/vosk.js
+public/models/speech/vosk-es/model.tar.gz

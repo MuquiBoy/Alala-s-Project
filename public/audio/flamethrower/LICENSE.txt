@@ -1,0 +1,14 @@
+FLAMETHROWER AUDIO — CC0-1.0
+
+Source: Synthesized Fire Sound Effect
+Author: Spring Spring (attribution notice: Spring)
+https://opengameart.org/content/synthesized-fire-sound-effect
+https://creativecommons.org/publicdomain/zero/1.0/
+
+The source page identifies the effect as CC0. These three processed WAV
+derivatives retain that dedication. Additional short synthesized sweeps
+authored for this demo are also dedicated to CC0.
+
+CC0 permits copying, modification, distribution and commercial use
+without requesting permission. No sounds from commercial games are included.
+Provenance, source hash, processing and output hashes: manifest.json.

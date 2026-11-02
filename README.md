@@ -93,3 +93,5 @@ El plan gratuito puede suspender el servicio después de 15 minutos sin activida
 Salas privadas sin cuentas, matchmaking ni persistencia. Desaparecen al reiniciar el servidor y vencen tras dos minutos sin conexiones. Hasta 16 salas como límite de protección, no como capacidad certificada bajo carga. El movimiento usa confirmación del servidor e interpolación; la latencia alta puede sentirse. La experiencia entre redes reales y micrófonos físicos requiere la prueba de ambos jugadores.
 
 Los originales Blender y materiales de trabajo permanecen locales; el GLB publicado contiene lo necesario para jugar. El audio de referencia de Cell no se incluye ni se usa como muestra. Los avisos y licencias de terceros permanecen junto a cada recurso.
+
+El [HUD neutral](docs/HUD.md) prioriza la vista FPS, con retrato 2D preparado y cámara de tercera persona debajo del moveset. El minimapa permanece disponible internamente y oculto en esta distribución.

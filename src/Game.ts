@@ -281,7 +281,8 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
       if (state.value === 'playing' || state.value === 'ready' || time - lastDraw >= (network && network.state?.status==='finished' ? 50 : 250)) {
         combatView?.update(); opponentView?.update(); view.render(state.value === 'ready' ? view.overview : fpsCamera.camera);
         avatarPreview?.render(time);
-        minimap?.render(time, motor.feet, fpsCamera.yaw); fpsFrames++; lastDraw = time;
+        if (!combatHud.minimap.closest<HTMLElement>('.minimap-section')?.hidden) minimap?.render(time, motor.feet, fpsCamera.yaw);
+        fpsFrames++; lastDraw = time;
       }
       calibration.expire(time);
       flameAudio.sync(combat.abilities.active('flamethrower'), state.value === 'playing');

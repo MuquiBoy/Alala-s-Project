@@ -5,7 +5,6 @@ import { ARENA, arenaWidth } from '../config/arena';
 export interface HudActions { enter: () => void; reset: () => void; pause: () => void }
 
 const mark = '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="m5 26 11-21 11 21H5Zm7-5h8l-4-8Z" fill="currentColor"/></svg>';
-const avatar = `<svg viewBox="0 0 200 132" aria-hidden="true"><ellipse cx="101" cy="112" rx="51" ry="8" fill="#0b130f" opacity=".55"/><path d="m60 89 15-4 3 25-14 1Zm60-2 14-1 4 24-15 1Zm-39 5 12-3 2 24H82Zm63-9 13-2 3 26-14 1Z" fill="#617761"/><path d="m59 66 39-22 43 19 13 24-41 17-48-17Z" fill="#a5bb7d"/><path d="m59 66 44 14 38-17-43-19Z" fill="#cfdfa0"/><path d="m103 80 10 24 41-17-13-24Z" fill="#8ea272"/><path d="m63 36 27-9 26 18-1 28-28 11-28-19Z" fill="#c4d995"/><path d="m63 36 28 13 25-4-26-18Z" fill="#e0e8bc"/><path d="m91 49-4 35 28-11 1-28Z" fill="#b1c188"/><path d="m66 36 1-21 13 17Zm29-6 10-17 3 25Z" fill="#eb9c78"/><path d="m66 53 8 3-1 8-8-3Zm29 4 8-3v8l-8 3Z" fill="#2b4034"/></svg>`;
 
 export class Hud {
   readonly canvas: HTMLCanvasElement;
@@ -47,9 +46,9 @@ export class Hud {
           </div>
           <aside class="side-panel" aria-label="Estado del avatar">
             <div class="panel-top"><span>SUJETO DE PRUEBA</span><span class="panel-index">01 / 01</span></div>
-            <div class="avatar-preview"><div class="preview-grid"></div>${avatar}<span class="preview-tag">GEOMETRÍA PROVISIONAL</span></div>
+            <section class="avatar-portrait" aria-label="Retrato 2D del avatar" data-state="ready"><div class="portrait-heading"><span>ENLACE / ROSTRO 2D</span><span class="portrait-signal">● EN ESPERA</span></div><div class="portrait-stage"><img id="avatar-face" alt="Rostro animado del avatar" hidden><div class="portrait-placeholder" aria-hidden="true"><span class="portrait-eyes">▰ &nbsp; ▰</span><span class="portrait-mouth"></span></div></div><span class="portrait-caption">MÓDULO EXPRESIVO · ${definition.name}</span></section>
             <div class="avatar-details"><div class="avatar-title"><h2>${definition.name}</h2><span class="active-badge">ACTIVO</span></div><p>Configuración de movimiento / 01</p>
-            <div class="health-line"><span>INTEGRIDAD</span><b>${definition.health}<small> / ${definition.health}</small></b></div><div class="health-bar"><span></span></div>
+            <div class="integrity-module"><div class="health-line"><span><svg class="integrity-symbol" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21 3 12C-3 5 6-1 12 6c6-7 15-1 9 6Z"/></svg> INTEGRIDAD</span><b>${definition.health}<small> / ${definition.health}</small></b></div><div class="health-bar"><span></span></div></div>
             <div class="state-line"><span>ESTADO</span><b id="state">EN ESPERA</b></div></div>
             <div class="metrics"><div><span>ALTURA DE OJOS</span><b>${definition.camera.offset.y.toFixed(2)} <small>M</small></b></div><div><span>VELOCIDAD</span><b id="speed">0.00 <small>M/S</small></b></div><div><span>SUPERFICIE</span><b id="ground">EN ESPERA</b></div></div>
             <div class="phase-note"><span class="phase-icon">◌</span><div><b>La voz será la intención.</b><p>Combate por voz previsto para las fases 4 y 5.</p></div></div>
@@ -74,6 +73,17 @@ export class Hud {
     element('close-help').addEventListener('click', () => dialog.close()); element('help-done').addEventListener('click', () => dialog.close());
   }
 
+  /** Future animated 2D face asset (APNG/WebP/GIF); independent of scene cameras. */
+  setPortrait(source: string | null): void {
+    const image = document.querySelector<HTMLImageElement>('#avatar-face');
+    const placeholder = document.querySelector<HTMLElement>('.portrait-placeholder');
+    if (!image || !placeholder) return;
+    image.onload = () => { image.hidden = false; placeholder.hidden = true; };
+    image.onerror = () => { image.hidden = true; placeholder.hidden = false; };
+    image.hidden = true; placeholder.hidden = false;
+    if (source) image.src = source; else image.removeAttribute('src');
+  }
+
   ready(): void { this.enter.disabled = false; this.enter.innerHTML = '<span>ENTRAR EN LA ARENA</span><b>↗</b>'; }
 
   state(state: GameState): void {
@@ -81,6 +91,8 @@ export class Hud {
     this.pause.disabled = state !== 'playing';
     document.querySelector('#crosshair')?.classList.toggle('visible', state === 'playing');
     this.status.textContent = { ready: 'EN ESPERA', playing: 'EXPLORANDO', paused: 'EN PAUSA', error: 'ERROR' }[state];
+    const portrait = document.querySelector<HTMLElement>('.avatar-portrait');
+    if (portrait) { portrait.dataset.state = state; const signal = portrait.querySelector('.portrait-signal'); if (signal) signal.textContent = `● ${this.status.textContent}`; }
     const viewName = document.querySelector('#view-name'); if (viewName) viewName.textContent = state === 'ready' ? 'VISTA GENERAL' : 'PRIMERA PERSONA';
     if (state === 'paused') {
       this.heading.innerHTML = 'Tu cuerpo<br>te espera.';

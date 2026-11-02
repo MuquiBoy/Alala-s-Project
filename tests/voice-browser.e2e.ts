@@ -56,7 +56,9 @@ test('las transcripciones simuladas activan el moveset mientras WASD sigue funci
   await expect(page.locator('#ability-charge_dash')).toHaveCount(0);
   await expect.poll(async () => Number(await page.locator('#coordinates').getAttribute('data-z'))).toBeLessThan(8);
   await page.keyboard.up('w');
-  await expect(page.locator('#minimap')).toBeVisible();
+  await expect(page.locator('#minimap')).toBeHidden();
+  await expect(page.locator('.avatar-portrait')).toBeVisible();
+  await expect(page.locator('.third-person-section #avatar-live')).toBeVisible();
   await page.keyboard.press('Escape'); await expect(page.locator('#mic-dot')).toHaveAttribute('data-state', 'off');
   expect(errors).toEqual([]);
 });

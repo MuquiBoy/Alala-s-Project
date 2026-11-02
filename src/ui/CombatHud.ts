@@ -5,6 +5,16 @@ import type { CombatRuntime } from '../combat/CombatRuntime';
 import type { CalibrationTrial } from '../voice/CalibrationSession';
 import type { RecognitionStatus, VoiceMode, VoiceRecord } from '../voice/types';
 
+const abilitySymbol = (id: AbilityId): string => {
+  const paths: Partial<Record<AbilityId, string>> = {
+    flamethrower: '<path d="M16 3c2 6-3 7 0 11 1-3 4-4 4-7 6 6 9 15 1 20-1-4-2-5-5-8 0 5-5 5-4 9C1 25 4 16 9 11c-1 5 1 6 2 7-2-7 4-9 5-15Z" fill="currentColor" stroke="none"/>',
+    barrage: '<path d="m4 11 7-4m3 1 7-4M3 20l8-5m4 1 8-5M11 28l8-5m3-1 7-4"/><path d="m11 7 2 2-3 2m11-7 2 2-3 2m-9 7 2 2-3 2m13-8 2 2-3 2m-3 9 2 2-3 2m11-8 2 2-3 2"/>',
+    armor: '<path d="m16 3 11 4v9c0 6-7 11-11 14C12 27 5 22 5 16V7Z"/><path d="m16 7 7 3v6c0 4-4 8-7 10-3-2-7-6-7-10v-6Z" fill="currentColor" opacity=".3"/>',
+    charge: '<path d="m4 5 10 11L4 27m10-22 10 11-10 11m10-22 6 7m-6 15 6-7"/>',
+  };
+  return `<svg class="ability-symbol" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[id] ?? ''}</svg>`;
+};
+
 export interface VoiceSettings { engine: 'vosk' | 'browser' | 'browser-local'; language: 'es-PE' | 'es-ES'; mode: VoiceMode }
 export interface CombatHudActions {
   pause: () => void;
@@ -46,11 +56,21 @@ export class CombatHud {
     const abilities = document.createElement('section'); abilities.className = 'ability-list'; abilities.setAttribute('aria-label', 'Habilidades por voz');
     abilities.innerHTML = '<div class="ability-heading">HABILIDADES <span>SOLO VOZ</span></div>' + definitions.map((ability, i) => `<div class="ability-row" id="ability-${ability.id}" data-state="ready"><span class="ability-number">0${i + 1}</span><div><b>${ability.name}</b><small class="ability-description">${ability.description ?? ''}</small><small class="ability-status">Disponible</small></div><span class="ability-clock">●</span><i></i></div>`).join('');
     root.querySelector('.panel-bottom')!.before(abilities);
+    const thirdPerson = document.createElement('section'); thirdPerson.className = 'third-person-section';
+    thirdPerson.innerHTML = '<div class="ability-heading">TERCERA PERSONA <span>APOYO VISUAL / EN VIVO</span></div><div class="avatar-preview"></div>';
+    root.querySelector('.panel-bottom')!.before(thirdPerson);
     const minimap = document.createElement('section'); minimap.className = 'minimap-section';
+    minimap.hidden = true;
     minimap.innerHTML = '<div class="ability-heading">CÁMARA CENITAL <span>3D EN VIVO</span></div><canvas id="minimap" aria-label="Cámara cenital de la misma arena"></canvas><div class="map-legend"><span>▲ TÚ</span><span>● ENEMIGOS</span><span>N ↑</span></div>';
     root.querySelector('.panel-bottom')!.before(minimap);
     this.minimap = minimap.querySelector('canvas')!;
-    for (const ability of definitions) this.rows.set(ability.id, abilities.querySelector(`#ability-${ability.id}`)!);
+    for (const ability of definitions) {
+      const row = abilities.querySelector<HTMLElement>(`#ability-${ability.id}`)!;
+      row.insertAdjacentHTML('afterbegin', abilitySymbol(ability.id));
+      row.insertAdjacentHTML('beforeend', '<span class="activation-corners" aria-hidden="true"></span>');
+      row.title = `${ability.name}: ${ability.description ?? ''}. Activación por voz.`;
+      this.rows.set(ability.id, row);
+    }
     const diagnostic = document.createElement('section'); diagnostic.className = 'diagnostic-panel'; diagnostic.id = 'diagnostics'; diagnostic.hidden = true;
     diagnostic.innerHTML = `<div class="diagnostic-title"><h2>Diagnóstico de voz</h2><span>Sin grabación de audio · datos sólo en esta sesión</span></div><div class="diagnostic-metrics"><div><small>RECONOCEDOR</small><b id="diag-recognizer">Detenido</b></div><div><small>ACEPTADAS / RECHAZADAS</small><b id="diag-count">0 / 0</b></div><div><small>RECONOCIMIENTO OBSERVADO</small><b id="diag-asr">—</b></div><div><small>TRANSCRIPCIÓN → ACTIVACIÓN LÓGICA</small><b id="diag-latency">—</b></div></div><div class="diagnostic-log"><span>ÚLTIMA TRANSCRIPCIÓN</span><p id="diag-transcript">—</p><span>INTERPRETACIÓN</span><p id="diag-result">—</p></div><div class="calibration"><h3>Calibración de vocabulario</h3><p>Con la partida en pausa, selecciona lo que vas a decir y toma una muestra. Aquí ninguna transcripción activa ataques. Incluye pruebas de conversación para detectar activaciones incorrectas.</p><div class="calibration-controls"><label>Resultado esperado<select id="trial-expected">${definitions.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}<option value="none">Conversación / ninguna habilidad</option></select></label><button id="take-trial" class="secondary-button">TOMAR MUESTRA (10 S)</button></div><p id="trial-feedback">Pendiente de tus pruebas con micrófono.</p><div class="calibration-controls"><label>Alias personal confirmado<input id="personal-alias" maxlength="40" placeholder="Ej.: corasa" autocomplete="off"></label><button id="save-alias" class="secondary-button">GUARDAR ALIAS</button><button id="clear-aliases" class="text-button">BORRAR ALIAS PERSONALES</button></div><p>Este ajuste adapta el vocabulario. No entrena pesos acústicos ni garantiza reconocer todos los acentos.</p></div><div class="diagnostic-export"><label><input id="probe-enabled" type="checkbox"> Ensayo de daño: una baliza causa 12 puntos cada 3 s si hay visión directa. Blindaje reduce daño térmico o de proyectil en un 75%.</label><label><input id="include-transcripts" type="checkbox"> Incluir transcripciones en el informe local</label><button id="export-voice" class="secondary-button">DESCARGAR INFORME JSON</button></div><div id="target-report" class="target-report"></div>`;
     root.querySelector('.control-strip')!.after(diagnostic); this.diagnostic = diagnostic;

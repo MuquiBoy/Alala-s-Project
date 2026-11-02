@@ -1,6 +1,6 @@
 import type { AbilityId } from '../attacks/types';
 export interface Vec3 { x: number; y: number; z: number }
-export interface HeavyIdentity { kind: 'heavy'; stride: number; soundBase: string; footstepGain: number; bodySettle: number; cameraImpact: number }
+export interface HeavyIdentity { kind: 'heavy'; stride: number; soundBase: string; stepPrefix?: string; footstepGain: number; bodySettle: number; cameraImpact: number }
 
 export type CreatureModel =
   | { kind: 'procedural'; color: string; accent: string; style?: 'abstract' | 'tank'; size?: Vec3 }

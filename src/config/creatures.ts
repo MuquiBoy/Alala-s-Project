@@ -18,13 +18,13 @@ export const AVATAR_01: CreatureDefinition = {
 export const THERMAL_TANK: CreatureDefinition = {
   ...AVATAR_01,
   name: 'Avatar 01',
-  model: { kind: 'procedural', style: 'tank', color: '#889e91', accent: '#ed9a62', size: { x: 3, y: 2.5, z: 3 } },
+  model: { kind: 'gltf', url: 'models/avatar-01/avatar-01_rigged_v2.glb', scale: 1 },
   collision: { radius: 1.5, height: 2.5, width: 3, depth: 3 },
-  movement: { speed: 2.8, acceleration: 9, deceleration: 14, turnSpeed: 7 },
+  movement: { speed: 0.8, acceleration: 1.6, deceleration: 2.4, turnSpeed: 0.7 },
   massKg: 500,
   health: 180,
   abilities: ['flamethrower', 'barrage', 'armor', 'charge'],
-  identity: { kind: 'heavy', stride: 2.2, soundBase: 'audio/creatures/avatar-01', footstepGain: 0.65, bodySettle: 0.022, cameraImpact: 0.006 },
+  identity: { kind: 'heavy', stride: 2.2, soundBase: 'audio/creatures/avatar-01', stepPrefix: 'biomech-step', footstepGain: 0.65, bodySettle: 0.022, cameraImpact: 0.006 },
   camera: { ...AVATAR_01.camera, offset: { x: 0, y: 2.02, z: -0.4 } },
   emitters: { primary: { x: 0, y: 1.88, z: -1.42 } },
 };

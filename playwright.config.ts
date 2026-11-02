@@ -10,15 +10,15 @@ export default defineConfig({
   use: {
     channel: 'chrome',
     headless: true,
-    baseURL: 'http://127.0.0.1:4178',
+    baseURL: 'http://127.0.0.1:4179',
     viewport: { width: 1600, height: 1000 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     launchOptions: { args: ['--mute-audio', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
   },
   webServer: {
-    command: 'node scripts/serve.mjs',
-    url: 'http://127.0.0.1:4178/__alalas/status',
+    command: 'node server-dist/server.mjs',
+    url: 'http://127.0.0.1:4179/__alalas/status',
     reuseExistingServer: !process.env.CI,
     timeout: 15000,
   },

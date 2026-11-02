@@ -1,4 +1,6 @@
-# Arquitectura 0.5.2 — campo de entrenamiento físico
+# Arquitectura — entrenamiento y PvP
+
+La versión 0.7.0 añade StartMenu y src/network sin sustituir el entrenamiento. El servidor reutiliza CombatRuntime, CharacterMotor y el registro de ataques en un mundo aislado por sala. [Arquitectura multijugador](PVP.md). La versión individual mantiene el flujo descrito a continuación; en PvP el servidor avanza la física y el cliente interpola los estados recibidos.
 
 ## Flujo principal
 

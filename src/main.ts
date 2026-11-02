@@ -1,5 +1,5 @@
 import './style.css';
 import './moveset.css';
-import { startCombatDemo } from './Game';
+import { startMenu } from './ui/StartMenu';
 
-void startCombatDemo();
+void startMenu();

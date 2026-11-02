@@ -26,16 +26,21 @@ import { FlameAudio } from './attacks/flamethrower/FlameAudio';
 import { AudioOutput } from './audio/AudioOutput';
 import { FootstepAudio } from './audio/FootstepAudio';
 import { CombatCueAudio } from './audio/CombatCueAudio';
-import { HeavyGait } from './identity/HeavyGait';
-import { HeavyGaitView } from './identity/HeavyGaitView';
+import { TankAnimation } from './render/TankAnimation';
+import { AvatarPreview } from './render/AvatarPreview';
 import { ChargeLanding } from './identity/ChargeLanding';
 import { LandingAudio } from './audio/LandingAudio';
+import type { PvpClient } from './network/PvpClient';
+import { PVP_SPAWNS, PVP_YAWS } from './network/protocol';
 
-export async function startCombatDemo(): Promise<void> {
+export async function startCombatDemo(network?: PvpClient): Promise<void> {
   const root = document.querySelector<HTMLElement>('#app'); if (!root) throw new Error('Falta el contenedor principal.');
   const state = new StateMachine();
   let input: PlayerInput | undefined, view: SceneView | undefined, physics: PhysicsWorld | undefined, motor: CharacterMotor | undefined;
   let combat: CombatRuntime | undefined, combatView: CombatView | undefined, minimap: MinimapView | undefined;
+  let opponent: CombatRuntime | undefined, opponentView: CombatView | undefined, opponentAnimation: TankAnimation | undefined;
+  const spawn = network ? PVP_SPAWNS[network.index] : ARENA.spawn;
+  const creature = network ? { ...THERMAL_TANK, id: `P${network.index+1}` } : THERMAL_TANK;
   let animationFrame = 0, disposed = false, voiceWanted = false, calibrating = false;
   const clock = new FixedStep(), fpsCamera = new FirstPersonCamera(THERMAL_TANK);
   const equipped = THERMAL_TANK.abilities.map(abilityById);
@@ -43,17 +48,18 @@ export async function startCombatDemo(): Promise<void> {
   const profile = new PersonalProfile(storage, equipped);
   const audioOutput = new AudioOutput(), flameAudio = new FlameAudio(audioOutput), combatCueAudio = new CombatCueAudio(audioOutput);
   const identity = THERMAL_TANK.identity;
-  const gait = identity ? new HeavyGait(identity.stride) : undefined;
   const footsteps = identity ? new FootstepAudio(audioOutput, identity) : undefined;
   const landing = identity ? new ChargeLanding() : undefined;
   const landingAudio = identity ? new LandingAudio(audioOutput, identity.soundBase + '/heavy-landing.wav') : undefined;
-  let gaitView: HeavyGaitView | undefined;
+  let animation: TankAnimation | undefined, avatarPreview: AvatarPreview | undefined;
   const browserSpeech = new WebSpeechRecognizer(), localSpeech = new VoskRecognizer();
   let speech: SpeechPort = localSpeech;
   let speechState = 'off', speechSignature = '';
   const calibration = new CalibrationSession();
-  const pipeline = new VoicePipeline(new CommandInterpreter(equipped, profile.aliases), (id, requestId) => combat?.activate(id, requestId) ?? { accepted: false, reason: 'El motor está cargando.', abilityId: id, startedAt: null });
-  const previous = new THREE.Vector3(ARENA.spawn.x, ARENA.spawn.y, ARENA.spawn.z), current = previous.clone(), interpolated = previous.clone();
+  const pipeline = new VoicePipeline(new CommandInterpreter(equipped, profile.aliases), (id, requestId) => network
+    ? state.value === 'playing' ? network.attack(id,requestId) : {accepted:false,reason:'La sesión está en pausa.',abilityId:id,startedAt:null}
+    : combat?.activate(id, requestId) ?? { accepted: false, reason: 'El motor está cargando.', abilityId: id, startedAt: null });
+  const previous = new THREE.Vector3(spawn.x, spawn.y, spawn.z), current = previous.clone(), interpolated = previous.clone();
   const hud = new Hud(root, THERMAL_TANK, { enter: () => { void enter(); }, reset, pause: () => input?.unlock() });
   const combatHud = new CombatHud(root, THERMAL_TANK, {
     pause: () => input?.unlock(),
@@ -125,18 +131,21 @@ export async function startCombatDemo(): Promise<void> {
 
   function reset(): void {
     if (!motor) return;
+    if (network) { network.send({type:'rematch'}); hud.notify('Revancha solicitada. Ambos jugadores deben confirmarla al terminar la ronda.'); return; }
     calibrating = false; calibration.cancel(); input?.unlock(); speech.stop(); pipeline.clearPending();
     flameAudio.reset(); combatCueAudio.reset();
-    footsteps?.silence(); landingAudio?.silence(); gait?.reset(); landing?.reset();
+    footsteps?.silence(); landingAudio?.silence(); animation?.reset(); landing?.reset();
     motor.reset(ARENA.spawn); combat?.reset(); combat?.setEnabled(false); fpsCamera.reset(); clock.reset();
     previous.set(motor.feet.x, motor.feet.y, motor.feet.z); current.copy(previous); fpsCamera.update(motor.feet);
+    animation?.update(0, motor.feet, { velocity: { x: 0, y: 0, z: 0 }, forward: 0, right: 0, aimYaw: 0, grounded: true, suspended: false });
     hud.notify('Ensayo restablecido: integridad, enemigos, recargas y posición.');
   }
 
   const dispose = (): void => {
     if (disposed) return; disposed = true; cancelAnimationFrame(animationFrame);
     input?.dispose(); browserSpeech.dispose(); localSpeech.dispose(); combatHud.dispose(); flameAudio.dispose(); combatCueAudio.reset(); footsteps?.dispose(); landingAudio?.dispose(); audioOutput.dispose();
-    minimap?.dispose(); if (view) combatView?.dispose(view.scene); combat?.dispose(); motor?.dispose(); physics?.dispose(); view?.dispose();
+    network?.dispose(); opponentAnimation?.dispose(); opponent?.motor?.dispose();
+    avatarPreview?.dispose(); animation?.dispose(); minimap?.dispose(); if (view) { combatView?.dispose(view.scene); opponentView?.dispose(view.scene); } combat?.dispose(); motor?.dispose(); physics?.dispose(); view?.dispose();
   };
   window.addEventListener('pagehide', dispose, { once: true }); if (import.meta.hot) import.meta.hot.dispose(dispose);
   try {
@@ -144,20 +153,52 @@ export async function startCombatDemo(): Promise<void> {
     hud.canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); state.set('error'); combat?.setEnabled(false); input?.unlock(); speech.stop(); hud.fatal('Se perdió el contexto gráfico. Recarga la página.'); });
     view.render(view.overview); await initializePhysics(); if (disposed) return;
     const colliders = createArenaColliders(ARENA);
-    physics = new PhysicsWorld(colliders); motor = new CharacterMotor(physics, THERMAL_TANK, ARENA.spawn);
-    combat = new CombatRuntime(THERMAL_TANK, physics, colliders, ARENA.spawn);
+    physics = new PhysicsWorld(colliders); motor = new CharacterMotor(physics, creature, spawn);
+    combat = new CombatRuntime(creature, physics, colliders, spawn, !network, network ? [] : undefined);
     combat.attachMotor(motor);
+    if (network) {
+      const otherIndex=1-network.index,otherDefinition={...THERMAL_TANK,id:`P${otherIndex+1}`};
+      opponent=new CombatRuntime(otherDefinition,physics,colliders,PVP_SPAWNS[otherIndex],false,[]);
+      opponent.attachMotor(new CharacterMotor(physics,otherDefinition,PVP_SPAWNS[otherIndex]));
+      combat.connectOpponent(opponent,PVP_SPAWNS[otherIndex]);opponent.connectOpponent(combat,spawn);
+      const otherAvatar=await createAvatarView(otherDefinition);view.scene.add(otherAvatar);
+      opponentAnimation=new TankAnimation(otherAvatar,creature.movement.turnSpeed);
+      const marker=new THREE.Mesh(new THREE.CircleGeometry(.6,12),new THREE.MeshBasicMaterial({color:'#ff9c74'}));
+      marker.rotation.x=-Math.PI/2;marker.position.y=5.3;marker.layers.set(2);otherAvatar.add(marker);
+      fpsCamera.yaw=PVP_YAWS[network.index];
+      document.querySelector('#reset')!.textContent='PEDIR REVANCHA';
+      document.querySelector('#entry-copy')!.textContent='Confirma tu micrófono y entra. El combate comenzará cuando ambos hayan entrado.';
+      const status=document.createElement('div');status.className='pvp-status';status.id='pvp-state';
+      document.querySelector('.viewport')!.prepend(status);
+      network.onNotice=message=>hud.notify(message);
+      let previousStatus='';
+      network.onState=room=>{
+        status.dataset.status=room.status;status.dataset.round=String(room.round);
+        status.dataset.health=String(room.actors[network.index].health);status.dataset.enemyHealth=String(room.actors[1-network.index].health);
+        const label={waiting:'Esperando que ambos entren',playing:'Duelo en curso',finished:room.winner==='draw'?'Empate':room.winner===creature.id?'Victoria':'Derrota',disconnected:'Rival desconectado · partida detenida'}[room.status];
+        status.textContent=`${room.connected.filter(Boolean).length}/2 · ${label} · Rival ${Math.ceil(room.actors[1-network.index].health)}/180 PV`;
+        if(room.status==='finished' && previousStatus!=='finished'){input?.unlock();hud.notify(`${label}. Ambos pueden pedir revancha.`);}
+        previousStatus=room.status;
+      };
+    }
     combat.onDefeated = () => { input?.unlock(); hud.notify('Sin integridad. Pulsa Reiniciar posición para preparar otra prueba.'); };
     const avatar = await createAvatarView(THERMAL_TANK); if (disposed) return;
-    if (identity) gaitView = new HeavyGaitView(avatar, identity.bodySettle);
+    animation = new TankAnimation(avatar, THERMAL_TANK.movement.turnSpeed);
     avatar.traverse(object => { if (object instanceof THREE.Mesh) object.layers.set(1); });
     view.overview.layers.enable(1); view.scene.add(avatar); avatar.position.copy(current);
+    const preview = root.querySelector<HTMLElement>('.avatar-preview');
+    if (preview) {
+      preview.innerHTML = '<canvas id="avatar-live" aria-label="Avatar 01: movimiento y apuntado en vivo"></canvas><span class="preview-tag">AVATAR 01 · EN VIVO</span>';
+      avatarPreview = new AvatarPreview(view.scene, animation, preview.querySelector('canvas')!);
+    }
     try { await view.loadReference(); } catch (error) { console.warn('Referencia:', error); hud.notify('Un recurso de referencia no cargó. Se mantiene la geometría y sus colisiones.'); }
     if (disposed) return;
-    combatView = new CombatView(view.scene, combat); minimap = new MinimapView(view.scene, combatHud.minimap);
+    combatView = new CombatView(view.scene, combat, !network); if(opponent)opponentView=new CombatView(view.scene,opponent,false);
+    minimap = new MinimapView(view.scene, combatHud.minimap);
     input = new PlayerInput(hud.canvas, locked => {
       if (state.value === 'error') return;
       state.set(locked ? 'playing' : 'paused'); combat?.setEnabled(locked);
+      if(network){if(locked)network.send({type:'enter'});network.input({...input!.movement(),yaw:fpsCamera.yaw,pitch:fpsCamera.pitch,active:locked},true);}
       if (!locked) flameAudio.sync(combat?.abilities.active('flamethrower') ?? false, false);
       if (!locked) {
         footsteps?.silence(); landingAudio?.silence();
@@ -171,23 +212,35 @@ export async function startCombatDemo(): Promise<void> {
     const render = (time: number): void => {
       if (disposed || !view || !physics || !motor || !input || !combat) return;
       const frame = Math.max(0, (time - last) / 1000); last = time; fpsTime += frame;
+      if(network && opponent){
+        const fresh=network.apply(frame,combat,opponent);
+        if(fresh){fpsCamera.yaw=network.state!.actors[network.index].input.yaw;fpsCamera.pitch=0;animation?.reset();opponentAnimation?.reset();landing?.reset();}
+        network.input({...input.movement(),yaw:fpsCamera.yaw,pitch:fpsCamera.pitch,active:state.value==='playing'});
+        const remote=network.state?.actors[1-network.index];
+        if(remote)opponentAnimation?.update(Math.min(frame,.1),opponent.motor!.feet,{...remote.input,aimYaw:remote.input.yaw,velocity:remote.velocity,grounded:remote.grounded,
+          suspended:network.state?.status!=='playing'||(opponent.abilities.active('charge')&&opponent.abilities.elapsed('charge')>=2)});
+      }
       if (fpsTime >= 0.5) { displayFps = fpsFrames / fpsTime; fpsTime = 0; fpsFrames = 0; }
       if (state.value === 'playing' && combat.health > 0) {
         const look = input.consumeLook(); fpsCamera.look(look.x, look.y); combat.probeEnabled = combatHud.probe;
         const alpha = clock.advance(frame, dt => {
-          previous.copy(current); combat!.aim(motor!.feet, fpsCamera.yaw, fpsCamera.pitch);
-          const modifiers = combat!.prepare(dt); motor!.update(input!.movement(), fpsCamera.yaw, dt, modifiers); physics!.step(dt);
-          combat!.aim(motor!.feet, fpsCamera.yaw, fpsCamera.pitch); combat!.afterPhysics(dt);
+          previous.copy(current);
+          if(!network){
+            combat!.aim(motor!.feet, fpsCamera.yaw, fpsCamera.pitch);
+            const modifiers = combat!.prepare(dt); motor!.update(input!.movement(), fpsCamera.yaw, dt, modifiers); physics!.step(dt);
+            combat!.aim(motor!.feet, fpsCamera.yaw, fpsCamera.pitch); combat!.afterPhysics(dt);
+          }
           const chargingImpulse = combat!.abilities.active('charge') && combat!.abilities.elapsed('charge') >= (abilityById('charge').windup ?? 0);
-          const step = gait?.advance(dt, motor!.feet, motor!.grounded, !combat!.abilities.active('charge_dash') && !chargingImpulse);
-          if (step !== null && step !== undefined) footsteps?.play(step);
+          const contacts = animation?.update(dt, motor!.feet, { ...input!.movement(), velocity: motor!.actualVelocity, aimYaw: fpsCamera.yaw,
+            grounded: motor!.grounded, coasting: motor!.speed > 0.018, suspended: combat!.abilities.active('charge_dash') || chargingImpulse || (!!network && (!network.connected || network.state?.status!=='playing')) }) ?? [];
+          for (const contact of contacts) footsteps?.play(contact.index, contact.strength);
           const landed = landing?.advance(dt, motor!.feet.y, motor!.grounded, chargingImpulse);
           if (landed) landingAudio?.play(landed.intensity);
           current.set(motor!.feet.x, motor!.feet.y, motor!.feet.z);
         });
-        interpolated.lerpVectors(previous, current, alpha); fpsCamera.update(interpolated); avatar.position.copy(interpolated);
-        if (gait && identity && combatHud.weightMotion) {
-          const since = gait.time - gait.lastImpact;
+        interpolated.lerpVectors(previous, current, alpha); fpsCamera.update(interpolated);
+        if (animation && identity && combatHud.weightMotion) {
+          const since = animation.time - animation.lastImpact;
           if (since >= 0 && since < 0.25) fpsCamera.camera.position.y -= Math.sin(since / 0.25 * Math.PI) * Math.exp(-since * 9) * identity.cameraImpact;
         }
         if (combatHud.weightMotion) {
@@ -200,18 +253,19 @@ export async function startCombatDemo(): Promise<void> {
             fpsCamera.camera.rotation.x += Math.sin(sinceLanding * 23) * 0.022 * envelope;
           }
         }
-        const yawDifference = Math.atan2(Math.sin(fpsCamera.yaw - avatar.rotation.y), Math.cos(fpsCamera.yaw - avatar.rotation.y));
-        avatar.rotation.y += yawDifference * (1 - Math.exp(-THERMAL_TANK.movement.turnSpeed * frame));
+      } else if (state.value === 'ready') {
+        animation?.update(Math.min(frame, 0.1), motor.feet, { velocity: { x: 0, y: 0, z: 0 }, forward: 0, right: 0,
+          aimYaw: fpsCamera.yaw, grounded: true, suspended: false });
       }
-      if (state.value === 'playing' || time - lastDraw >= 250) {
-        if (gait) gaitView?.update(gait, state.value === 'playing' ? motor.speed : 0);
-        combatView?.update(); view.render(state.value === 'ready' ? view.overview : fpsCamera.camera);
+      if (state.value === 'playing' || state.value === 'ready' || time - lastDraw >= 250) {
+        combatView?.update(); opponentView?.update(); view.render(state.value === 'ready' ? view.overview : fpsCamera.camera);
+        avatarPreview?.render(time);
         minimap?.render(time, motor.feet, fpsCamera.yaw); fpsFrames++; lastDraw = time;
       }
       calibration.expire(time);
       flameAudio.sync(combat.abilities.active('flamethrower'), state.value === 'playing');
       combatCueAudio.sync(state.value === 'playing', combat.barrageShotsFired, combat.abilities.active('charge'), combat.abilities.elapsed('charge'), abilityById('charge').windup ?? 0, combat.impactCount);
-      if (time - uiTime > 100) { hud.telemetry(motor.feet, motor.speed, motor.grounded, displayFps, fpsCamera.yaw); combatHud.update(combat); uiTime = time; }
+      if (time - uiTime > 100) { hud.telemetry(motor.feet, Math.hypot(motor.actualVelocity.x, motor.actualVelocity.z), motor.grounded, displayFps, fpsCamera.yaw); combatHud.update(combat); uiTime = time; }
       animationFrame = requestAnimationFrame(render);
     };
     animationFrame = requestAnimationFrame(render);

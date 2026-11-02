@@ -48,11 +48,14 @@ export class CombatRuntime {
   motor: CharacterMotor | null = null;
   private readonly targetByCollider = new Map<number, TrainingTarget>();
   private nextProbe: number = COMBAT.probeInterval;
+  private opponent?: CombatRuntime;
+  private readonly impactVelocities = new Map<string, Vec3>();
+  remoteVisual?: { projectiles: ProjectileView[]; impacts: ImpactView[]; shots: number };
 
-  constructor(readonly definition: CreatureDefinition, physics: PhysicsWorld, readonly boxes: readonly StaticBox[], spawn: Vec3, readonly trainingEnabled = true) {
+  constructor(readonly definition: CreatureDefinition, physics: PhysicsWorld, readonly boxes: readonly StaticBox[], spawn: Vec3, readonly trainingEnabled = true, roster = TRAINING_ENEMIES) {
     this.health = definition.health; this.feet = { ...spawn };
     this.abilities = new AbilitySystem(definition.abilities, ABILITIES, id => this.attacks.get(id)?.onActivate?.());
-    this.targets = TRAINING_ENEMIES.map(spec => {
+    this.targets = roster.map(spec => {
       const targetDefinition: CreatureDefinition = {
         ...AVATAR_01, id: spec.id, name: spec.id, massKg: spec.massKg, health: spec.health,
         model: { kind: 'procedural', color: spec.color, accent: spec.color },
@@ -73,6 +76,17 @@ export class CombatRuntime {
 
   aim(feet: Vec3, yaw: number, pitch: number): void { this.feet = feet; this.yaw = yaw; this.pitch = pitch; }
   attachMotor(motor: CharacterMotor): void { this.motor = motor; }
+  captureImpactVelocities(): void { this.impactVelocities.clear(); for(const target of this.targets)this.impactVelocities.set(target.id,{...target.motor.actualVelocity}); }
+  connectOpponent(opponent: CombatRuntime, spawn: Vec3): void {
+    if (this.targets.length || !opponent.motor) throw new Error('El duelo requiere actores sin enemigos de entrenamiento.');
+    this.opponent = opponent;
+    const spec: TrainingEnemySpec = { id: opponent.definition.id, color: '#ef9a6c', kind: 'magenta', pattern: 'static',
+      health: opponent.definition.health, massKg: opponent.definition.massKg, spawn };
+    const target: TrainingTarget = { id: spec.id, spec, spawn, motor: opponent.motor, maximum: spec.health, massKg: spec.massKg, radius: opponent.definition.collision.radius,
+      get health() { return opponent.health; }, set health(value) { opponent.health = value; },
+      controller: new TrainingController(spec), lastDamage: 0, lastImpulse: 0, lastDeltaV: 0, projectileHits: 0 };
+    this.targets.push(target); this.targetByCollider.set(target.motor.collider.handle, target);
+  }
   setEnabled(enabled: boolean): void { this.abilities.enabled = enabled && this.health > 0; }
   activate(id: AbilityId, commandId: string): Activation { return this.abilities.request(id, commandId); }
   get origin(): Vec3 {
@@ -81,13 +95,14 @@ export class CombatRuntime {
   }
   get direction(): Vec3 { return aimDirection(this.yaw, this.pitch); }
   get pulseCenter(): Vec3 { return this.attacks.get('thermal_pulse')?.effectOrigin ?? this.feet; }
-  get barrageProjectiles(): readonly ProjectileView[] { return this.attacks.get('barrage')?.projectiles ?? []; }
-  get barrageImpacts(): readonly ImpactView[] { return this.attacks.get('barrage')?.impacts ?? []; }
-  get barrageShotsFired(): number { return this.attacks.get('barrage')?.shotsFired ?? 0; }
+  get barrageProjectiles(): readonly ProjectileView[] { return this.remoteVisual?.projectiles ?? this.attacks.get('barrage')?.projectiles ?? []; }
+  get barrageImpacts(): readonly ImpactView[] { return this.remoteVisual?.impacts ?? this.attacks.get('barrage')?.impacts ?? []; }
+  get barrageShotsFired(): number { return this.remoteVisual?.shots ?? this.attacks.get('barrage')?.shotsFired ?? 0; }
 
-  damageTarget(target: TestTarget, amount: number, _type: DamageType): number {
+  damageTarget(target: TestTarget, amount: number, type: DamageType): number {
     const enemy = this.targets.find(candidate => candidate.id === target.id);
     if (!enemy || enemy.health <= 0) return 0;
+    if (this.opponent) return this.opponent.receiveDamage(amount, [type]);
     const applied = Math.min(enemy.health, Math.max(0, amount));
     enemy.health -= applied; enemy.lastDamage = applied;
     if (applied > 0) enemy.controller.attacked(this.definition.id);
@@ -107,7 +122,7 @@ export class CombatRuntime {
   impactTarget(target: TestTarget, normal: Vec3): ImpactSolution {
     if (!this.motor) throw new Error('El motor del atacante no está vinculado.');
     const enemy = this.targets.find(candidate => candidate.id === target.id)!;
-    const attackerBefore = { ...this.motor.requestedVelocity }, targetBefore = { ...enemy.motor.actualVelocity };
+    const attackerBefore = { ...this.motor.requestedVelocity }, targetBefore = { ...(this.impactVelocities.get(enemy.id) ?? enemy.motor.actualVelocity) };
     const solution = solveImpact(this.motor.massKg, enemy.motor.massKg, attackerBefore, targetBefore, normal);
     const momentum = { x: solution.normal.x * solution.impulseKgMs, y: solution.normal.y * solution.impulseKgMs, z: solution.normal.z * solution.impulseKgMs };
     const attackerApplied = this.motor.applyImpulse({ x: -momentum.x, y: -momentum.y, z: -momentum.z });
@@ -122,7 +137,7 @@ export class CombatRuntime {
   }
 
   prepare(dt: number): MotionModifiers {
-    for (const target of this.targets) {
+    for (const target of this.opponent ? [] : this.targets) {
       if (target.health <= 0) continue;
       const from = this.targetCenter(target), to = { ...this.feet, y: this.feet.y + this.definition.collision.height * 0.5 };
       const distance = Math.hypot(to.x - from.x, to.y - from.y, to.z - from.z);
@@ -177,11 +192,11 @@ export class CombatRuntime {
     return this.lastDamage;
   }
 
-  targetCenter(target: TestTarget): Vec3 { const feet = target.motor.feet; return { x: feet.x, y: feet.y + 0.7, z: feet.z }; }
+  targetCenter(target: TestTarget): Vec3 { const feet = target.motor.feet; return { x: feet.x, y: feet.y + (this.opponent ? this.opponent.definition.collision.height / 2 : 0.7), z: feet.z }; }
   reset(): void {
     this.abilities.reset(); this.heat.reset(); this.enemyProjectiles.reset(); this.health = this.definition.health; this.lastDamage = 0; this.lastImpact = null; this.impactCount = 0; this.lastImpactAt = -Infinity; this.lastProjectileHit = null; this.nextProbe = COMBAT.probeInterval;
     for (const attack of this.attacks.values()) attack.reset?.();
     for (const target of this.targets) { target.motor.reset(target.spawn); target.controller.reset(); target.health = target.maximum; target.massKg = target.spec.massKg; target.motor.massKg = target.spec.massKg; target.lastDamage = 0; target.lastImpulse = 0; target.lastDeltaV = 0; target.projectileHits = 0; }
   }
-  dispose(): void { this.targets.forEach(target => target.motor.dispose()); }
+  dispose(): void { if (!this.opponent) this.targets.forEach(target => target.motor.dispose()); }
 }

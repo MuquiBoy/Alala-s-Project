@@ -10,17 +10,17 @@ export class FootstepAudio {
   constructor(private readonly output:AudioOutput,private readonly profile:HeavyIdentity) {}
   prepare(): void {
     if(this.disposed || !this.output.context) return;
-    this.loading ??= Promise.all([1,2,3,4].map(index=>this.output.load(this.profile.soundBase+'/heavy-step-0'+index+'.wav')))
+    this.loading ??= Promise.all([1,2,3,4].map(index=>this.output.load(this.profile.soundBase+'/'+(this.profile.stepPrefix ?? 'heavy-step')+'-0'+index+'.wav')))
       .then(buffers=>{ if(!this.disposed) this.buffers=buffers; })
       .catch(()=>{this.loading=undefined;this.onError('No se cargaron los pasos. La partida sigue disponible.');});
   }
-  play(index:number): void {
+  play(index:number, strength = 1): void {
     const context=this.output.context, master=this.output.master;
     if(this.disposed || !context || !master || !this.buffers || context.state!=='running' || this.playing.size>=3) return;
     const source=context.createBufferSource(),gain=context.createGain();
     source.buffer=this.buffers[(index*3)%this.buffers.length];
-    source.playbackRate.value=[0.98,1.015,1,0.99][index%4];
-    gain.gain.value=this.profile.footstepGain*(index%2===0?1:0.94);
+    source.playbackRate.value=1; // Variations are authored; never move the contact transient in time.
+    gain.gain.value=this.profile.footstepGain*strength;
     source.connect(gain);gain.connect(master);this.playing.set(source,gain);
     source.onended=()=>{source.disconnect();gain.disconnect();this.playing.delete(source);};
     source.start();

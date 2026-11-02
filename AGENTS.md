@@ -4,6 +4,8 @@
 
 La versión 0.5.2 usa la nueva arena de 50 × 50 m, cuatro enemigos magenta y un blanco verde, masas configurables, impulso de Embestida y proyectiles reactivos. Embestida causa 30 puntos por contacto válido y produce un empuje físico perceptible; daño y masa siguen separados. Una caída real tras la Embestida produce sonido grave y sacudida visual; el dash terrestre no. El usuario quiere sugerencias en el chat, sin globos ni ayudas emergentes nuevas en el juego. Conservar Three.js, la distribución general de interfaz y VoiceAttack. No migrar a Godot en este hito. La evaluación del micrófono real y la sensación de juego le corresponde al usuario. Las pruebas del agente son en segundo plano y silenciadas.
 
+La versión 0.7.0 integra el GLB animado del usuario, marcha de 0,8 m/s, pisadas biomecánicas y PvP privado 1 vs. 1 autorizado. Conservar siempre el entrenamiento. GitHub principal: MuquiBoy/Alala-s-Project; verificar la copia remota antes de desplegar Render. Los jugadores sólo necesitan navegador; Node y Python son requisitos del desarrollador/servidor.
+
 ## Fundamentos
 
 - Three.js + TypeScript estricto + Vite; Rapier para física. Conservar la base funcional.
@@ -17,7 +19,7 @@ La versión 0.5.2 usa la nueva arena de 50 × 50 m, cuatro enemigos magenta y un
 - Ataques en src/attacks/<id>, una sola entrada en el registro. Las criaturas sólo eligen identificadores. Estado mutable por actor, nunca global entre personajes.
 - Audio con una salida de juego compartida y captura independiente; no silenciar el micrófono por efectos. Pasos sólo por desplazamiento real en suelo.
 - Datos, modelo visible, movimiento, reconocimiento, interpretación y ejecutor permanecen separados.
-- No añadir lore, progresión, inventarios o PvP online en este hito.
+- No añadir lore, progresión, inventarios, rankings ni matchmaking. El PvP privado está autorizado: autoridad de simulación en servidor, voz local por jugador y habilidades compartidas.
 
 ## Voz y datos
 

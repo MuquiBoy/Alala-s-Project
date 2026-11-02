@@ -1,4 +1,10 @@
-# Verificación 0.5.2 — Embestida y campo de entrenamiento de 50 × 50 m
+# Verificación 0.7.0 — entrenamiento, animación y PvP
+
+2 de noviembre de 2026: compilación cliente/servidor y TypeScript correctos; **174 pruebas unitarias aprobadas y 14 pruebas de Chrome aprobadas**. Chrome sin ventana, silenciado y con un trabajador. Los dos clientes PvP usan contextos independientes, el servidor real y transcripciones simuladas. Se comprobaron invitación, selección, inicio, daño reflejado en ambos, rechazo de tercero y desconexión. La suite unitaria cubre las cuatro habilidades, colisiones, empuje, defensa, final de ronda y revancha. No se usó el micrófono del usuario.
+
+La comprobación desde una clonación de GitHub se registra separadamente al publicar. Las pruebas locales no acreditan por sí solas un despliegue público ni calidad con micrófonos humanos. Detalles en [PVP.md](PVP.md).
+
+## Historial 0.5.2 — Embestida y entrenamiento
 
 Fecha: 1 de noviembre de 2026. Se ejecutaron pruebas con Chrome sin ventana, perfil aislado y audio silenciado. No se usaron ventanas del usuario ni su micrófono físico.
 

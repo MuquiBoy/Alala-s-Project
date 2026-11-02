@@ -48,7 +48,7 @@ describe('combate integrado con física', () => {
     const t = scenario(ARENA.spawn, legacyTank); t.combat.activate('armor_guard', 'guard'); expect(t.combat.receiveDamage(100)).toBeCloseTo(35); tick(t, 120); expect(t.combat.receiveDamage(100)).toBe(100);
   });
   it('Coraza limita la velocidad normal sin modificar el perfil de movimiento', () => {
-    const t = scenario(ARENA.spawn, legacyTank); t.combat.activate('armor_guard', 'guard'); tick(t, 30, 0, 1); expect(t.motor.speed).toBeCloseTo(2.8 * 0.45, 3); expect(THERMAL_TANK.movement.speed).toBe(2.8);
+    const t = scenario(ARENA.spawn, legacyTank); t.combat.activate('armor_guard', 'guard'); tick(t, 30, 0, 1); expect(t.motor.speed).toBeCloseTo(THERMAL_TANK.movement.speed * 0.45, 3); expect(THERMAL_TANK.movement.speed).toBe(0.8);
   });
   it('Embestida recorre 3 m en 0.4 s, sin sumar WASD al desplazamiento', () => {
     const t = scenario(ARENA.spawn, legacyTank); tick(t, 30); t.combat.activate('charge_dash', 'dash'); tick(t, 24, 0, 1); expect(t.motor.feet.z).toBeCloseTo(5.5, 3); expect(Math.abs(t.motor.feet.x)).toBeLessThan(0.005);

@@ -9,5 +9,10 @@ if not defined ALALAS_NODE (
   pause
   exit /b 1
 )
-"%ALALAS_NODE%" "%~dp0scripts\serve.mjs" --open
+if not exist "%~dp0server-dist\server.mjs" (
+  echo Falta compilar el juego. Sigue los pasos de instalacion en README.md.
+  pause
+  exit /b 1
+)
+"%ALALAS_NODE%" "%~dp0server-dist\server.mjs" --open
 if errorlevel 1 pause

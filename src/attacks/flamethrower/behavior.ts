@@ -11,7 +11,7 @@ export function createFlamethrower(context: AttackContext): AttackBehavior {
     context.heat.expose(origin, direction, attack.range, COMBAT.flameHalfAngle, context.boxes);
     for (const target of context.targets) {
       const center = context.targetCenter(target);
-      if (target.health > 0 && inFlameVolume(origin, direction, center, COMBAT.targetRadius, attack.range, COMBAT.flameHalfAngle) && lineClear(origin, center, context.boxes)) context.damageTarget(target, attack.damage * time, 'thermal');
+      if (target.health > 0 && inFlameVolume(origin, direction, center, target.radius ?? COMBAT.targetRadius, attack.range, COMBAT.flameHalfAngle) && lineClear(origin, center, context.boxes)) context.damageTarget(target, attack.damage * time, 'thermal');
     }
   } };
 }

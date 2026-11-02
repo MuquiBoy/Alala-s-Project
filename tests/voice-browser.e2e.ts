@@ -27,7 +27,7 @@ async function mockedSpeech(page: Page): Promise<void> {
   });
 }
 async function enable(page: Page): Promise<void> {
-  await page.goto('/?quality=low'); await page.getByRole('button', { name: 'CONFIGURAR VOZ' }).click();
+  await page.goto('/?mode=solo&quality=low'); await page.getByRole('button', { name: 'CONFIGURAR VOZ' }).click();
   await page.locator('#voice-engine').selectOption('browser'); await page.locator('#voice-consent').check();
   await page.getByRole('button', { name: 'ACTIVAR MICRÓFONO' }).click();
   await expect(page.locator('#mic-dot')).toHaveAttribute('data-state', 'listening');

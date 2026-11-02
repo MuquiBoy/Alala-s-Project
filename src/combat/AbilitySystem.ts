@@ -47,4 +47,11 @@ export class AbilitySystem {
   }
 
   reset(): void { this.time = 0; this.states.clear(); this.requests.clear(); this.requestOrder.length = 0; }
+  networkState(): { time: number; states: [AbilityId, { started: number; ends: number; ready: number }][] } {
+    return { time: this.time, states: Array.from(this.states) };
+  }
+  applyNetwork(state: ReturnType<AbilitySystem['networkState']>): void {
+    this.time = state.time; this.states.clear();
+    for (const [id, value] of state.states) this.states.set(id, value);
+  }
 }

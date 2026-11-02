@@ -12,6 +12,7 @@ export async function createAvatarView(definition: CreatureDefinition): Promise<
       if (object instanceof THREE.Mesh) { object.castShadow = true; object.receiveShadow = true; }
     });
     root.add(asset.scene);
+    root.animations = asset.animations;
     return root;
   }
   const base = new THREE.MeshStandardMaterial({ color: definition.model.color, flatShading: true, roughness: 0.9 });

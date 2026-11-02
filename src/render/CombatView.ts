@@ -22,9 +22,9 @@ export class CombatView {
   private readonly pulse: THREE.Mesh;
   private readonly pulsePositions = new Float32Array(64 * 6 * 3);
 
-  constructor(scene: THREE.Scene, private readonly combat: CombatRuntime) {
+  constructor(scene: THREE.Scene, private readonly combat: CombatRuntime, showTraining = true) {
     this.root.name = 'combat-effects'; scene.add(this.root);
-    for (const target of combat.targets) {
+    for (const target of showTraining ? combat.targets : []) {
       const root = new THREE.Group();
       const body = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 0), new THREE.MeshStandardMaterial({ color: target.spec.color, flatShading: true, roughness: 0.9 }));
       body.position.y = 0.75; body.castShadow = true; root.add(body);
@@ -38,7 +38,7 @@ export class CombatView {
       const map = new THREE.CanvasTexture(label); map.colorSpace = THREE.SRGBColorSpace;
       const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map, depthTest: true })); sprite.position.y = 1.75; sprite.scale.set(0.9, 0.34, 1); root.add(sprite);
     }
-    const probe = new THREE.Mesh(new THREE.OctahedronGeometry(0.2), new THREE.MeshStandardMaterial({ color: '#dfe8bd', emissive: '#7e5730' })); probe.position.set(8.5, 1.2, 8.5); this.root.add(probe);
+    const probe = new THREE.Mesh(new THREE.OctahedronGeometry(0.2), new THREE.MeshStandardMaterial({ color: '#dfe8bd', emissive: '#7e5730' })); probe.position.set(8.5, 1.2, 8.5); probe.visible = showTraining; this.root.add(probe);
     this.flame = new FlameView(this.root, combat);
     this.heat = new HeatView(this.root, combat.heat);
     this.barrage = new BarrageView(this.root, combat);

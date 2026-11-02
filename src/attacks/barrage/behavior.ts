@@ -62,7 +62,7 @@ export function createBarrage(context: AttackContext): AttackBehavior {
           const along = dx * projectile.direction.x + dy * projectile.direction.y + dz * projectile.direction.z;
           if (along < 0 || along > hitDistance) continue;
           const lateral = Math.hypot(dx - along * projectile.direction.x, dy - along * projectile.direction.y, dz - along * projectile.direction.z);
-          if (lateral <= COMBAT.targetRadius + 0.12) { hit = target; hitDistance = along; }
+          if (lateral <= (target.radius ?? COMBAT.targetRadius) + 0.12) { hit = target; hitDistance = along; }
         }
         projectile.position = { x: projectile.position.x + projectile.direction.x * hitDistance, y: projectile.position.y + projectile.direction.y * hitDistance, z: projectile.position.z + projectile.direction.z * hitDistance };
         projectile.travelled += hitDistance;

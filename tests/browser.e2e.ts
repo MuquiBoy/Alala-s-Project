@@ -8,7 +8,7 @@ test('Chrome carga el escenario, el OBJ y el PNG locales sin errores', async ({ 
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   page.on('response', response => { if (response.ok()) resources.push(decodeURI(response.url())); });
-  await page.goto('/');
+  await page.goto('/?mode=solo');
   await expect(page.getByRole('button', { name: 'ENTRAR EN LA ARENA' })).toBeEnabled();
   await expect.poll(async () => Number.parseInt(await page.locator('#fps').innerText())).toBeGreaterThan(0);
   expect(resources.some(url => url.endsWith('arena-v2.obj'))).toBe(true);
@@ -18,7 +18,7 @@ test('Chrome carga el escenario, el OBJ y el PNG locales sin errores', async ({ 
 });
 
 test('captura el ratón, mueve con WASD, apunta, pausa y reinicia', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=solo');
   const enter = page.getByRole('button', { name: 'ENTRAR EN LA ARENA' });
   const bounds = await enter.boundingBox();
   expect(bounds).not.toBeNull();
@@ -42,11 +42,12 @@ test('captura el ratón, mueve con WASD, apunta, pausa y reinicia', async ({ pag
 });
 
 test('el movimiento real del navegador choca con la barrera del OBJ', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=solo');
   await page.getByRole('button', { name: 'ENTRAR EN LA ARENA' }).click();
   await expect(page.locator('#state')).toHaveText('EXPLORANDO');
   await page.keyboard.down('w');
-  await expect.poll(() => metric(page, 'z')).toBeLessThan(2.6);
+  // The accepted heavy gait is 0.8 m/s. Software-rendered CI can advance slower than wall time.
+  await expect.poll(() => metric(page, 'z'), { timeout: 30000 }).toBeLessThan(2.6);
   // Keep pushing after contact; this is a meaningful timed collision observation.
   await page.waitForTimeout(650);
   await page.keyboard.up('w');
@@ -56,7 +57,7 @@ test('el movimiento real del navegador choca con la barrera del OBJ', async ({ p
 });
 
 test('la guía abre y cierra sin arrancar el micrófono ni el combate', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=solo');
   await page.getByRole('button', { name: 'GUÍA DE CONTROL' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByRole('dialog')).toContainText('WASD');

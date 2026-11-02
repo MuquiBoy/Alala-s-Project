@@ -1,0 +1,45 @@
+{
+  "name": "Avatar 01 — pisada biomecánica v1",
+  "source": "Existing CC0 AudioPapkin heavy-step derivatives plus original procedural synthesis.",
+  "reference": "Cell's Walk Sound.mp3 supplied privately by the user; timbre reference only, no samples in these assets.",
+  "reference_analysis": {
+    "duration_seconds": 4.7833,
+    "approx_contact_spacing_seconds": 0.58,
+    "energy_500_to_4000_hz_fraction": 0.881,
+    "method": "Decoded waveform and spectrum. Not a claim of subjective listening."
+  },
+  "design": "Low heavy body + short inharmonic shell flex + filtered mechanical/chitin crackle. Four subtle variations.",
+  "timing": "Animation touchdown events own timing. No audio clock, no movement adjustment to fit the reference.",
+  "format": "Mono PCM16, 22050 Hz; playbackRate=1; pre-existing heavy landing remains separate.",
+  "assets": [
+    {
+      "file": "biomech-step-01.wav",
+      "seconds": 0.58,
+      "peak": 0.6901,
+      "rms": 0.1843,
+      "sha256": "f4e74f54583211582e39dcb63b5a05c383a8cf4d2bebd646bb1596d877ae95d2"
+    },
+    {
+      "file": "biomech-step-02.wav",
+      "seconds": 0.585,
+      "peak": 0.6901,
+      "rms": 0.1997,
+      "sha256": "50f89cf91646f35b3d86f541025a958a0c58c31fcd7ada9f67862c187b0f8637"
+    },
+    {
+      "file": "biomech-step-03.wav",
+      "seconds": 0.59,
+      "peak": 0.6901,
+      "rms": 0.1789,
+      "sha256": "d8a3fd9a31ada36066c6a153c366e3b4e1a71ed6ca023d995756c15f46e09c43"
+    },
+    {
+      "file": "biomech-step-04.wav",
+      "seconds": 0.595,
+      "peak": 0.6901,
+      "rms": 0.1977,
+      "sha256": "5253c48c70267234d8521e0cf31ed7236169abcaa15fdbd63c206bf5eb1ee38f"
+    }
+  ],
+  "evaluation": "Decoding, onset, spectrum and peak verified. Perceived balance and room/microphone feedback require player listening."
+}

@@ -15,7 +15,7 @@ export interface AbilityDefinition {
   readonly assistCone?: number; readonly assistCorrection?: number; readonly heatDuration?: number; readonly heatDamage?: number;
 }
 export interface TestTarget {
-  id: string; motor: CharacterMotor; health: number; maximum: number; spawn: Vec3; massKg: number;
+  id: string; motor: CharacterMotor; health: number; maximum: number; spawn: Vec3; massKg: number; radius?: number;
 }
 /** Live getters bind shared logic to one actor. Mutable state belongs to that actor. */
 export interface AttackContext {

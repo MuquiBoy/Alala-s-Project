@@ -12,4 +12,4 @@ export interface ActorState {
   projectiles: ProjectileView[]; impacts: ImpactView[]; shots: number;
   impactCount: number; lastImpactAt: number | null; lastImpact: ImpactDiagnostic | null;
 }
-export interface RoomState { type: 'state'; room: string; status: 'waiting'|'playing'|'finished'|'disconnected'; winner: string|null; round: number; actors: ActorState[]; connected: boolean[]; ready: boolean[] }
+export interface RoomState { type: 'state'; room: string; status: 'waiting'|'playing'|'finished'|'disconnected'; winner: string|null; round: number; actors: ActorState[]; connected: boolean[]; ready: boolean[]; prepared: boolean[]; rematch: boolean[] }

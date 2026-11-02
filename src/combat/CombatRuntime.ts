@@ -187,8 +187,9 @@ export class CombatRuntime {
     let multiplier = 1;
     for (const attack of this.attacks.values()) multiplier *= attack.damageMultiplier?.(types) ?? 1;
     this.lastDamage = Math.max(0, amount) * multiplier;
+    const beforeHealth=this.health;
     this.health = Math.max(0, this.health - this.lastDamage);
-    if (this.health === 0) { this.abilities.enabled = false; this.onDefeated(); }
+    if (this.health === 0 && beforeHealth > 0) { this.abilities.enabled = false; this.onDefeated(); }
     return this.lastDamage;
   }
 
@@ -198,5 +199,6 @@ export class CombatRuntime {
     for (const attack of this.attacks.values()) attack.reset?.();
     for (const target of this.targets) { target.motor.reset(target.spawn); target.controller.reset(); target.health = target.maximum; target.massKg = target.spec.massKg; target.motor.massKg = target.spec.massKg; target.lastDamage = 0; target.lastImpulse = 0; target.lastDeltaV = 0; target.projectileHits = 0; }
   }
+  finishRound():void{this.abilities.reset();this.abilities.enabled=false;this.heat.reset();this.enemyProjectiles.reset();for(const attack of this.attacks.values())attack.reset?.();}
   dispose(): void { if (!this.opponent) this.targets.forEach(target => target.motor.dispose()); }
 }

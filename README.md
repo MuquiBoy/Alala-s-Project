@@ -80,6 +80,8 @@ pnpm test:browser
 
 Las pruebas de navegador requieren Chrome instalado y se ejecutan sin ventana, silenciadas, con un trabajador. El PvP usa dos contextos independientes y transcripciones simuladas; esto no valida acentos ni micrófonos humanos. [Verificación](docs/VERIFICATION.md) y [arquitectura PvP](docs/PVP.md).
 
+Las correcciones de preparación vocal, reutilización de partículas, estabilidad de resultado y revancha del beta test del 2 de noviembre están en el [informe de seguimiento](docs/BETA_TEST_2026-11-02.md).
+
 ## Despliegue en Render
 
 El archivo [render.yaml](render.yaml) configura un único servicio Node en el plan **Free**, sin base de datos ni disco de pago. Conecta este repositorio a un Blueprint, rama main y ruta render.yaml. Compila cliente y servidor, prepara el modelo de voz y escucha el puerto que Render asigna. Comparte la dirección HTTPS generada por Render; cada sala obtiene su propio enlace.

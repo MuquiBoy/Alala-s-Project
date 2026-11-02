@@ -44,6 +44,6 @@ export class FlameView {
       color.toArray(this.colors, index * 3); this.opacity[index++] = p.alpha;
     }
     this.mesh.count = index; this.mesh.visible = index > 0;
-    this.mesh.instanceMatrix.needsUpdate = true; this.mesh.geometry.getAttribute('flameColor').needsUpdate = true; this.mesh.geometry.getAttribute('flameOpacity').needsUpdate = true;
+    if(index>0){this.mesh.instanceMatrix.needsUpdate = true; this.mesh.geometry.getAttribute('flameColor').needsUpdate = true; this.mesh.geometry.getAttribute('flameOpacity').needsUpdate = true;}
   }
 }

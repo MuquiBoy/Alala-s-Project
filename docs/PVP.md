@@ -26,4 +26,4 @@ Los rechazos de sala se transmiten como mensajes explícitos antes de cerrar Web
 
 pvp.test.ts prueba la simulación real: selección y entrada, movimiento, colisiones, Lanzallamas contra Blindaje, Ráfaga y oclusión, daño único y empuje de Embestida, desconexión, victoria y revancha. pvp.e2e.ts prueba dos contextos Chrome independientes: invitación, confirmación, orden vocal simulada y daño observado en ambos; también tercero rechazado e invitación inválida. Se conserva la suite individual.
 
-No incluye predicción local, cuentas, antitrampas competitivo ni certificación de carga. La conexión de dos navegadores no sustituye la prueba de experiencia con dos personas y micrófonos físicos.
+No incluye predicción local, cuentas, antitrampas competitivo ni certificación de carga. La conexión de dos navegadores no sustituye la prueba de experiencia con dos personas y micrófonos físicos. Los cambios del beta test del 2 de noviembre se documentan en [BETA_TEST_2026-11-02.md](BETA_TEST_2026-11-02.md).

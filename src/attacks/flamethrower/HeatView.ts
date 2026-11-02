@@ -18,6 +18,7 @@ export class HeatView {
     parent.add(this.mesh);
   }
   update(): void {
+    if(this.field.tiles.size===0){this.mesh.count=0;return;}
     let index = 0;
     for (const tile of this.field.tiles.values()) {
       this.transform.position.set(tile.x, -tile.z, 0.018);

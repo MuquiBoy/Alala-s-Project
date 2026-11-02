@@ -21,6 +21,7 @@ export class CombatView {
   private readonly impactFlash: THREE.Mesh;
   private readonly pulse: THREE.Mesh;
   private readonly pulsePositions = new Float32Array(64 * 6 * 3);
+  get flameParticles():number{return this.flame.simulation.count;}
 
   constructor(scene: THREE.Scene, private readonly combat: CombatRuntime, showTraining = true) {
     this.root.name = 'combat-effects'; scene.add(this.root);

@@ -41,7 +41,8 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
   let opponent: CombatRuntime | undefined, opponentView: CombatView | undefined, opponentAnimation: TankAnimation | undefined;
   const spawn = network ? PVP_SPAWNS[network.index] : ARENA.spawn;
   const creature = network ? { ...THERMAL_TANK, id: `P${network.index+1}` } : THERMAL_TANK;
-  let animationFrame = 0, disposed = false, voiceWanted = false, calibrating = false;
+  let animationFrame = 0, disposed = false, voiceWanted = false, calibrating = false, assetsReady=false, micRequestedAt=0;
+  const preparePvp=():void=>{if(network&&assetsReady&&speechState==='listening')network.send({type:'prepared'});};
   const clock = new FixedStep(), fpsCamera = new FirstPersonCamera(THERMAL_TANK);
   const equipped = THERMAL_TANK.abilities.map(abilityById);
   let storage: Storage | undefined; try { storage = localStorage; } catch { /* Private mode can block storage. */ }
@@ -61,10 +62,17 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
     : combat?.activate(id, requestId) ?? { accepted: false, reason: 'El motor está cargando.', abilityId: id, startedAt: null });
   const previous = new THREE.Vector3(spawn.x, spawn.y, spawn.z), current = previous.clone(), interpolated = previous.clone();
   const hud = new Hud(root, THERMAL_TANK, { enter: () => { void enter(); }, reset, pause: () => input?.unlock() });
+  const showPvpResult=():void=>{
+    const room=network?.state;if(room?.status!=='finished')return;
+    const label=room.winner==='draw'?'Empate':room.winner===creature.id?'Victoria':'Derrota';
+    document.querySelector('#entry-title')!.textContent=label;
+    document.querySelector('#entry-copy')!.textContent=`Ganador: ${room.winner??'empate'}. Solicita la revancha desde el panel lateral o sal de la sala.`;
+    const button=document.querySelector<HTMLButtonElement>('#enter')!;button.disabled=true;button.textContent='ESPERANDO REVANCHA';
+  };
   const combatHud = new CombatHud(root, THERMAL_TANK, {
     pause: () => input?.unlock(),
     volume: value => audioOutput.setVolume(value),
-    enable: () => { voiceWanted = true; calibrating = false; calibration.cancel(); startVoice(); },
+    enable: () => { voiceWanted = true;micRequestedAt=performance.now();calibrating = false; calibration.cancel(); startVoice(); },
     disable: () => { voiceWanted = false; calibrating = false; calibration.cancel(); speech.stop(); pipeline.clearPending(); },
     install: () => { void browserSpeech.installLocal(combatHud.settings().language).then(ok => hud.notify(ok ? 'Idioma local instalado. Puedes activarlo.' : 'No se pudo instalar el idioma.')).catch(error => hud.notify(String(error))); },
     trial: expected => {
@@ -86,7 +94,7 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
   });
 
   for (const port of [browserSpeech, localSpeech]) {
-    port.onStatus = status => { if (speech === port) { speechState = status.state; combatHud.recognition(status); } };
+    port.onStatus = status => { if (speech === port) { speechState = status.state; combatHud.recognition(status);if(status.state==='listening'){const display=document.querySelector<HTMLElement>('#pvp-state');if(display&&micRequestedAt)display.dataset.micInitMs=String(Math.round(performance.now()-micRequestedAt));preparePvp();} } };
     port.onTranscript = transcript => {
       if (speech !== port) return;
       combatHud.preview(transcript.text);
@@ -103,6 +111,8 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
   const announced = new Set<string>();
   pipeline.onRecord = record => {
     combatHud.record(record, pipeline.accepted, pipeline.rejected);
+    const display=document.querySelector<HTMLElement>('#pvp-state');
+    if(display){display.dataset.interpretationMs=record.interpretationMs.toFixed(1);if(record.speechStartedAt!==null)display.dataset.transcriptionMs=String(Math.round(record.transcriptReceivedAt-record.speechStartedAt));}
     if (record.status === 'accepted' && record.abilityId && !announced.has(record.id)) { announced.add(record.id); if (announced.size > 300) announced.delete(announced.values().next().value!); hud.notify(`${abilityById(record.abilityId).name} · orden recibida`); }
   };
   calibration.onTrial = trial => combatHud.trialResult(trial, calibration.trials.length);
@@ -121,6 +131,7 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
 
   async function enter(): Promise<void> {
     if (!input || !motor) return;
+    if(network&&(!voiceWanted||speechState!=='listening')){hud.notify('Prepara VoiceAttack y espera a «Escuchando» antes de entrar al PvP.');return;}
     audioOutput.unlock(); flameAudio.prepare(); footsteps?.prepare(); landingAudio?.prepare();
     // A calibration utterance must never spill into live combat. Keep the loaded model,
     // but start a fresh input/recognizer session when crossing this boundary.
@@ -171,16 +182,25 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
       const status=document.createElement('div');status.className='pvp-status';status.id='pvp-state';
       document.querySelector('.viewport')!.prepend(status);
       network.onNotice=message=>hud.notify(message);
+      network.onAck=(elapsedMs,accepted)=>{status.dataset.ackMs=String(elapsedMs);status.dataset.lastAckAccepted=String(accepted);};
       let previousStatus='';
       network.onState=room=>{
         status.dataset.status=room.status;status.dataset.round=String(room.round);
         status.dataset.health=String(room.actors[network.index].health);status.dataset.enemyHealth=String(room.actors[1-network.index].health);
         const label={waiting:'Esperando que ambos entren',playing:'Duelo en curso',finished:room.winner==='draw'?'Empate':room.winner===creature.id?'Victoria':'Derrota',disconnected:'Rival desconectado · partida detenida'}[room.status];
-        status.textContent=`${room.connected.filter(Boolean).length}/2 · ${label} · Rival ${Math.ceil(room.actors[1-network.index].health)}/180 PV`;
-        if(room.status==='finished' && previousStatus!=='finished'){input?.unlock();hud.notify(`${label}. Ambos pueden pedir revancha.`);}
+      status.textContent=`${room.connected.filter(Boolean).length}/2 · ${label} · ${room.prepared.filter(Boolean).length}/2 voces preparadas · Rival ${Math.ceil(room.actors[1-network.index].health)}/180 PV${room.status==='finished'?` · Ganador ${room.winner??'empate'} · Revancha ${room.rematch.filter(Boolean).length}/2`:''}`;
+        if(room.status==='finished' && previousStatus!=='finished'){
+          input?.unlock();hud.notify(`${label}. Ambos pueden pedir revancha.`);
+          showPvpResult();
+        }
+        if(room.status==='playing'&&previousStatus==='finished'){
+          const enterButton=document.querySelector<HTMLButtonElement>('#enter')!;enterButton.disabled=false;
+          hud.state(state.value);hud.notify('Nueva ronda preparada. Reactiva la voz y entra en la arena.');
+        }
         previousStatus=room.status;
       };
     }
+    if(network){const metrics=document.createElement('p');metrics.id='pvp-metrics';metrics.className='pvp-metrics';metrics.textContent='Voz: preparación — · transcripción — · interpretación — · red —';document.querySelector('.side-panel')!.append(metrics);const leave=document.createElement('button');leave.id='leave-room';leave.className='secondary-button';leave.textContent='SALIR DE LA SALA';document.querySelector('.panel-bottom')!.append(leave);leave.onclick=()=>{location.href='/';};}
     combat.onDefeated = () => { input?.unlock(); hud.notify('Sin integridad. Pulsa Reiniciar posición para preparar otra prueba.'); };
     const avatar = await createAvatarView(THERMAL_TANK); if (disposed) return;
     animation = new TankAnimation(avatar, THERMAL_TANK.movement.turnSpeed);
@@ -206,15 +226,16 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
         if (motor) { previous.set(motor.feet.x, motor.feet.y, motor.feet.z); current.copy(previous); }
       } else { calibrating = false; calibration.cancel(); startVoice(); }
       hud.state(state.value);
+      if(!locked)showPvpResult();
     }, message => hud.notify(message));
-    hud.ready(); fpsCamera.update(motor.feet);
+    assetsReady=true;preparePvp();hud.ready(); fpsCamera.update(motor.feet);
     let last = performance.now(), uiTime = 0, fpsTime = 0, fpsFrames = 0, displayFps = 0, lastDraw = -Infinity;
     const render = (time: number): void => {
       if (disposed || !view || !physics || !motor || !input || !combat) return;
       const frame = Math.max(0, (time - last) / 1000); last = time; fpsTime += frame;
       if(network && opponent){
         const fresh=network.apply(frame,combat,opponent);
-        if(fresh){fpsCamera.yaw=network.state!.actors[network.index].input.yaw;fpsCamera.pitch=0;animation?.reset();opponentAnimation?.reset();landing?.reset();}
+        if(fresh){fpsCamera.yaw=network.state!.actors[network.index].input.yaw;fpsCamera.pitch=0;animation?.reset();opponentAnimation?.reset();landing?.reset();flameAudio.reset();combatCueAudio.reset();footsteps?.silence();landingAudio?.silence();clock.reset();previous.set(motor.feet.x,motor.feet.y,motor.feet.z);current.copy(previous);}
         network.input({...input.movement(),yaw:fpsCamera.yaw,pitch:fpsCamera.pitch,active:state.value==='playing'});
         const remote=network.state?.actors[1-network.index];
         if(remote)opponentAnimation?.update(Math.min(frame,.1),opponent.motor!.feet,{...remote.input,aimYaw:remote.input.yaw,velocity:remote.velocity,grounded:remote.grounded,
@@ -257,7 +278,7 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
         animation?.update(Math.min(frame, 0.1), motor.feet, { velocity: { x: 0, y: 0, z: 0 }, forward: 0, right: 0,
           aimYaw: fpsCamera.yaw, grounded: true, suspended: false });
       }
-      if (state.value === 'playing' || state.value === 'ready' || time - lastDraw >= 250) {
+      if (state.value === 'playing' || state.value === 'ready' || time - lastDraw >= (network && network.state?.status==='finished' ? 50 : 250)) {
         combatView?.update(); opponentView?.update(); view.render(state.value === 'ready' ? view.overview : fpsCamera.camera);
         avatarPreview?.render(time);
         minimap?.render(time, motor.feet, fpsCamera.yaw); fpsFrames++; lastDraw = time;
@@ -265,7 +286,7 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
       calibration.expire(time);
       flameAudio.sync(combat.abilities.active('flamethrower'), state.value === 'playing');
       combatCueAudio.sync(state.value === 'playing', combat.barrageShotsFired, combat.abilities.active('charge'), combat.abilities.elapsed('charge'), abilityById('charge').windup ?? 0, combat.impactCount);
-      if (time - uiTime > 100) { hud.telemetry(motor.feet, Math.hypot(motor.actualVelocity.x, motor.actualVelocity.z), motor.grounded, displayFps, fpsCamera.yaw); combatHud.update(combat); uiTime = time; }
+      if (time - uiTime > 100) { hud.telemetry(motor.feet, Math.hypot(motor.actualVelocity.x, motor.actualVelocity.z), motor.grounded, displayFps, fpsCamera.yaw); combatHud.update(combat);const metrics=document.querySelector<HTMLElement>('#pvp-state');if(metrics){metrics.dataset.frameMs=(frame*1000).toFixed(1);metrics.dataset.fps=String(Math.round(displayFps));metrics.dataset.flameParticles=String(combatView?.flameParticles??0);metrics.dataset.enemyFlameParticles=String(opponentView?.flameParticles??0);metrics.dataset.projectiles=String(combat.barrageProjectiles.length);metrics.dataset.enemyProjectiles=String(opponent?.barrageProjectiles.length??0);document.querySelector('#pvp-metrics')!.textContent=`Voz: preparación ${metrics.dataset.micInitMs??'—'} ms · transcripción ${metrics.dataset.transcriptionMs??'—'} ms · interpretación ${metrics.dataset.interpretationMs??'—'} ms · red ${metrics.dataset.ackMs??'—'} ms | ${Math.round(displayFps)} FPS · fuego ${metrics.dataset.flameParticles}/${metrics.dataset.enemyFlameParticles}`;}uiTime = time; }
       animationFrame = requestAnimationFrame(render);
     };
     animationFrame = requestAnimationFrame(render);

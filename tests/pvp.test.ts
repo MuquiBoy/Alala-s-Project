@@ -2,11 +2,11 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { initializePhysics } from '../src/physics/PhysicsWorld';
 import { Duel } from '../src/network/Duel';
 beforeAll(initializePhysics);
-function match():Duel{const duel=new Duel('test');duel.connected.fill(true);duel.select(0);duel.select(1);duel.enter(0);duel.enter(1);return duel;}
+function match():Duel{const duel=new Duel('test');duel.connected.fill(true);duel.select(0);duel.select(1);duel.prepare(0);duel.prepare(1);duel.enter(0);duel.enter(1);return duel;}
 const step=(duel:Duel,n:number)=>{for(let i=0;i<n;i++)duel.step(1/60);};
 describe('duelo autoritativo con las habilidades originales',()=>{
  it('exige selección y entrada de ambos, congela al desconectar y coordina revancha',()=>{
-  const d=new Duel('room');d.connected.fill(true);d.select(0);d.enter(0);expect(d.status).toBe('waiting');d.select(1);d.enter(1);expect(d.status).toBe('playing');
+  const d=new Duel('room');d.connected.fill(true);d.select(0);d.enter(0);expect(d.status).toBe('waiting');d.select(1);d.enter(1);expect(d.status).toBe('waiting');d.prepare(0);expect(d.status).toBe('waiting');d.prepare(1);expect(d.status).toBe('playing');
   step(d,30);const time=d.actors[0].abilities.time;d.connected[1]=false;step(d,30);expect(d.status).toBe('disconnected');expect(d.actors[0].abilities.time).toBe(time);
   d.connected[1]=true;d.actors[1].health=0;step(d,1);expect(d.winner).toBe('P1');d.vote(0);expect(d.status).toBe('finished');d.vote(1);expect(d.status).toBe('playing');expect(d.actors[1].health).toBe(180);expect(d.round).toBe(2);d.dispose();
  });
@@ -25,5 +25,22 @@ describe('duelo autoritativo con las habilidades originales',()=>{
  });
  it('Embestida causa daño y transfiere impulso entre dos tanques de 500 kg',()=>{
   const d=match();step(d,20);d.attack(0,'charge','impact');step(d,220);expect(d.actors[1].health).toBe(150);expect(d.actors[0].impactCount).toBe(1);expect(d.actors[1].motor!.feet.x).toBeGreaterThan(6.5);d.dispose();
+ });
+ it('dos Lanzallamas simultáneos y varias rondas limpian calor, recargas y proyectiles',()=>{
+  const d=match();
+  expect(d.attack(0,'flamethrower','fire-1').accepted).toBe(true);
+  expect(d.attack(1,'flamethrower','fire-2').accepted).toBe(true);
+  step(d,40);
+  expect(d.snapshot().actors.every(actor=>actor.heat.length>0)).toBe(true);
+  d.actors[1].health=0;step(d,1);
+  expect(d.status).toBe('finished');
+  expect(d.snapshot().actors.every(actor=>actor.heat.length===0&&actor.projectiles.length===0)).toBe(true);
+  const time=d.actors[0].abilities.time;step(d,90);expect(d.actors[0].abilities.time).toBe(time);
+  d.vote(0);d.vote(1);
+  expect(d.round).toBe(2);expect(d.snapshot().actors.every(actor=>actor.health===180&&actor.heat.length===0)).toBe(true);
+  expect(d.attack(0,'barrage','round-2').accepted).toBe(true);step(d,10);
+  d.actors[0].health=0;step(d,1);d.vote(0);d.vote(1);
+  expect(d.round).toBe(3);expect(d.snapshot().actors.every(actor=>actor.projectiles.length===0&&actor.shots===0)).toBe(true);
+  d.dispose();
  });
 });

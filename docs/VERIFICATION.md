@@ -2,6 +2,8 @@
 
 2 de noviembre de 2026: compilación cliente/servidor y TypeScript correctos; **174 pruebas unitarias aprobadas y 14 pruebas de Chrome aprobadas**. Chrome sin ventana, silenciado y con un trabajador. Los dos clientes PvP usan contextos independientes, el servidor real y transcripciones simuladas. Se comprobaron invitación, selección, inicio, daño reflejado en ambos, rechazo de tercero y desconexión. La suite unitaria cubre las cuatro habilidades, colisiones, empuje, defensa, final de ronda y revancha. No se usó el micrófono del usuario.
 
+Actualización del beta test: **175 pruebas unitarias** y **2/2 escenarios PvP en Chrome** con la revisión de preparación de voz, pools por avatar, resultado y revancha. Incluye una prueba de tres rondas sin calor ni proyectiles residuales. [Informe del beta test](BETA_TEST_2026-11-02.md). Los 14 escenarios generales corresponden a la versión base; el escenario individual de carga de arena pasó también con la revisión.
+
 ## Copia publicada en GitHub
 
 Se verificó directamente la rama main, commit `24b31edab70d4edcd266a2959a569743527b129e`: 189 archivos, incluidos GLB, arena, sonidos, scripts, código, pruebas y lockfile. Se clonó en una carpeta nueva, se instalaron las dependencias con el lockfile congelado, se descargó y preparó el modelo oficial español, pasaron las 174 pruebas y se compilaron cliente y servidor. Desde esa copia se ejecutaron y pasaron tres escenarios de Chrome: carga de arena individual, partida con movimiento y ataques de ambos clientes, e invitación inválida. Sin archivos de trabajo ni recursos privados copiados desde la carpeta original.

@@ -48,6 +48,8 @@ test('dos clientes invitan, eligen Avatar 01 y combaten por voz con salud consis
   await expect(b.locator('#ability-barrage')).toHaveAttribute('data-state','ready',{timeout:15000});
   await b.evaluate(()=>{(window as unknown as {__say:(s:string)=>void}).__say('ráfaga');});
   await expect(b.locator('#pvp-state')).toContainText('Victoria');await expect(a.locator('#pvp-state')).toContainText('Derrota');
+  await expect(b.locator('#entry-title')).toHaveText('Victoria');await expect(a.locator('#entry-title')).toHaveText('Derrota');
+  await expect(b.locator('#enter')).toBeDisabled();await expect(a.locator('#enter')).toBeDisabled();
   await a.getByRole('button',{name:'PEDIR REVANCHA'}).click();await b.getByRole('button',{name:'PEDIR REVANCHA'}).click();
   await expect(a.locator('#pvp-state')).toHaveAttribute('data-round','2');await expect(b.locator('#pvp-state')).toHaveAttribute('data-round','2');
   expect(await hp(a)).toBe(180);expect(await hp(b)).toBe(180);

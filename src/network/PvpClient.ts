@@ -7,6 +7,8 @@ export class PvpClient {
   index = -1;
   state?: RoomState;
   latency = 0;
+  lastAckMs: number|null = null;
+  onAck: (elapsedMs:number,accepted:boolean) => void = () => {};
   onState: (state: RoomState) => void = () => {};
   onNotice: (message: string) => void = () => {};
   private socket?: WebSocket;
@@ -16,6 +18,7 @@ export class PvpClient {
   private retry?: ReturnType<typeof setTimeout>;
   private ping?: ReturnType<typeof setInterval>;
   private readonly requests = new Set<string>();
+  private readonly sentAt = new Map<string,number>();
   private initializedRound = -1;
   constructor(readonly room: string) { try { this.token = sessionStorage.getItem('alalas-room-'+room) ?? ''; } catch { /* Private mode */ } }
   async connect(): Promise<void> {
@@ -35,7 +38,11 @@ export class PvpClient {
           if(this.ping)clearInterval(this.ping);
           this.ping=setInterval(()=>this.send({type:'ping',at:performance.now()}),5000);resolve();
         }else if(message.type==='state'){this.state=message;this.onState(message);}
-        else if(message.type==='ack'&&!message.accepted)this.onNotice(message.reason);
+        else if(message.type==='ack'){
+          const sent=this.sentAt.get(message.request);this.sentAt.delete(message.request);
+          if(sent!==undefined){this.lastAckMs=Math.round(performance.now()-sent);this.onAck(this.lastAckMs,message.accepted===true);}
+          if(!message.accepted)this.onNotice(message.reason);
+        }
         else if(message.type==='pong')this.latency=Math.round(performance.now()-message.at);
       };
       ws.onerror=()=>{if(!welcomed)reject(new Error('No se pudo conectar al servidor PvP. Abre JUGAR.cmd o verifica el enlace.'));};
@@ -59,6 +66,7 @@ export class PvpClient {
     if(!this.connected||this.state?.status!=='playing')return reject('La sala todavía no está combatiendo.');
     if(this.requests.has(requestId))return reject('Transcripción ya procesada.');
     this.requests.add(requestId);if(this.requests.size>512)this.requests.delete(this.requests.values().next().value!);
+    this.sentAt.set(requestId,performance.now());if(this.sentAt.size>512)this.sentAt.delete(this.sentAt.keys().next().value!);
     this.send({type:'attack',id,request:requestId.slice(0,80)});
     return {accepted:true,reason:'Orden enviada al servidor; pendiente de validación.',abilityId:id,startedAt:null};
   }

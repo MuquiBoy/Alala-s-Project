@@ -20,12 +20,18 @@ export class HeatField {
 
   expose(origin: Vec3, direction: Vec3, range: number, halfAngle: number, boxes: readonly StaticBox[]): void {
     const radius = this.tileSize * Math.SQRT2 / 2;
-    for (let row = 0; row < this.count; row++) for (let column = 0; column < this.count; column++) {
+    const lowX=Math.max(0,Math.floor((origin.x-range-radius+this.half)/this.tileSize));
+    const highX=Math.min(this.count-1,Math.floor((origin.x+range+radius+this.half)/this.tileSize));
+    const lowZ=Math.max(0,Math.floor((origin.z-range-radius+this.half)/this.tileSize));
+    const highZ=Math.min(this.count-1,Math.floor((origin.z+range+radius+this.half)/this.tileSize));
+    for (let row = lowZ; row <= highZ; row++) for (let column = lowX; column <= highX; column++) {
       const x = -this.half + (column + 0.5) * this.tileSize, z = -this.half + (row + 0.5) * this.tileSize;
       const surface = { x, y: ARENA.floorTop + 0.01, z };
       if (!inFlameVolume(origin, direction, surface, radius, range, halfAngle) || !lineClear(origin, surface, boxes)) continue;
       const id = row * this.count + column;
-      this.tiles.set(id, { id, x, z, remaining: FLAMETHROWER.heatDuration! });
+      const existing=this.tiles.get(id);
+      if(existing)existing.remaining=FLAMETHROWER.heatDuration!;
+      else this.tiles.set(id, { id, x, z, remaining: FLAMETHROWER.heatDuration! });
     }
   }
 

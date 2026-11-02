@@ -13,6 +13,9 @@ const angle = (a: Vec3, b: Vec3): number => Math.acos(Math.max(-1, Math.min(1, d
 /** Deterministic fixed-step volley. Each shot has one immutable launch direction. */
 export function createBarrage(context: AttackContext): AttackBehavior {
   const projectiles: Projectile[] = [], impacts: ImpactView[] = [];
+  const freeProjectiles:Projectile[]=Array.from({length:BARRAGE.projectileCount!},()=>({position:{x:0,y:0,z:0},direction:{x:0,y:0,z:0},travelled:0,active:false}));
+  const freeImpacts:ImpactView[]=Array.from({length:BARRAGE.projectileCount!},()=>({position:{x:0,y:0,z:0},age:0}));
+  const release=():void=>{for(const shot of projectiles)freeProjectiles.push(shot);projectiles.length=0;for(const hit of impacts)freeImpacts.push(hit);impacts.length=0;};
   let shotsFired = 0, locked: string | null = null;
   const select = (origin: Vec3, direction: Vec3): TestTarget | null => {
     const valid = (target: TestTarget): boolean => {
@@ -37,12 +40,13 @@ export function createBarrage(context: AttackContext): AttackBehavior {
       const fraction = error > 1e-6 ? correction / error : 0;
       direction = unit({ x: aim.x * (1 - fraction) + desired.x * fraction, y: aim.y * (1 - fraction) + desired.y * fraction, z: aim.z * (1 - fraction) + desired.z * fraction });
     }
-    projectiles.push({ position: origin, direction, travelled: 0, active: true });
+    const shot=freeProjectiles.pop();
+    if(shot){shot.position.x=origin.x;shot.position.y=origin.y;shot.position.z=origin.z;shot.direction.x=direction.x;shot.direction.y=direction.y;shot.direction.z=direction.z;shot.travelled=0;shot.active=true;projectiles.push(shot);}
     shotsFired++;
   };
   return {
     get projectiles() { return projectiles; }, get impacts() { return impacts; }, get shotsFired() { return shotsFired; },
-    onActivate() { projectiles.length = 0; impacts.length = 0; shotsFired = 0; locked = null; },
+    onActivate() { release(); shotsFired = 0; locked = null; },
     afterPhysics(dt) {
       const activeTime = context.abilities.overlap(BARRAGE.id, dt);
       const elapsed = context.abilities.elapsed(BARRAGE.id);
@@ -64,15 +68,18 @@ export function createBarrage(context: AttackContext): AttackBehavior {
           const lateral = Math.hypot(dx - along * projectile.direction.x, dy - along * projectile.direction.y, dz - along * projectile.direction.z);
           if (lateral <= (target.radius ?? COMBAT.targetRadius) + 0.12) { hit = target; hitDistance = along; }
         }
-        projectile.position = { x: projectile.position.x + projectile.direction.x * hitDistance, y: projectile.position.y + projectile.direction.y * hitDistance, z: projectile.position.z + projectile.direction.z * hitDistance };
+        projectile.position.x += projectile.direction.x * hitDistance;projectile.position.y += projectile.direction.y * hitDistance;projectile.position.z += projectile.direction.z * hitDistance;
         projectile.travelled += hitDistance;
-        if (hit) { context.damageTarget(hit, BARRAGE.damage, 'projectile'); projectile.active = false; impacts.push({ position: { ...projectile.position }, age: 0 }); }
-        else if (hitWall || projectile.travelled >= BARRAGE.range - 1e-6) { projectile.active = false; impacts.push({ position: { ...projectile.position }, age: 0 }); }
+        if (hit || hitWall || projectile.travelled >= BARRAGE.range - 1e-6) {
+          if(hit)context.damageTarget(hit,BARRAGE.damage,'projectile');
+          projectile.active=false;
+          const flash=freeImpacts.pop();if(flash){flash.position.x=projectile.position.x;flash.position.y=projectile.position.y;flash.position.z=projectile.position.z;flash.age=0;impacts.push(flash);}
+        }
       }
       for (const impact of impacts) impact.age += dt;
-      for (let i = impacts.length - 1; i >= 0; i--) if (impacts[i].age > 0.18) impacts.splice(i, 1);
-      for (let i = projectiles.length - 1; i >= 0; i--) if (!projectiles[i].active) projectiles.splice(i, 1);
+      for (let i = impacts.length - 1; i >= 0; i--) if (impacts[i].age > 0.18) freeImpacts.push(impacts.splice(i, 1)[0]);
+      for (let i = projectiles.length - 1; i >= 0; i--) if (!projectiles[i].active) freeProjectiles.push(projectiles.splice(i, 1)[0]);
     },
-    reset() { projectiles.length = 0; impacts.length = 0; shotsFired = 0; locked = null; },
+    reset() { release(); shotsFired = 0; locked = null; },
   };
 }

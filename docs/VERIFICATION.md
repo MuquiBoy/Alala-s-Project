@@ -4,6 +4,8 @@
 
 Actualización del beta test: **175 pruebas unitarias** y **2/2 escenarios PvP en Chrome** con la revisión de preparación de voz, pools por avatar, resultado y revancha. Incluye una prueba de tres rondas sin calor ni proyectiles residuales. [Informe del beta test](BETA_TEST_2026-11-02.md). Los 14 escenarios generales corresponden a la versión base; el escenario individual de carga de arena pasó también con la revisión.
 
+La misma revisión `9e8976c` superó GitHub Actions y está activa en [Render](https://alalas-project.onrender.com). La suite PvP se ejecutó contra esa URL pública con dos navegadores independientes y terminó **2/2**: combate, resultado, revancha, sala llena e invitación inválida. El audio de voz fue simulado; falta validar latencia y FPS con dos jugadores y micrófonos reales.
+
 ## Copia publicada en GitHub
 
 Se verificó directamente la rama main, commit `24b31edab70d4edcd266a2959a569743527b129e`: 189 archivos, incluidos GLB, arena, sonidos, scripts, código, pruebas y lockfile. Se clonó en una carpeta nueva, se instalaron las dependencias con el lockfile congelado, se descargó y preparó el modelo oficial español, pasaron las 174 pruebas y se compilaron cliente y servidor. Desde esa copia se ejecutaron y pasaron tres escenarios de Chrome: carga de arena individual, partida con movimiento y ataques de ambos clientes, e invitación inválida. Sin archivos de trabajo ni recursos privados copiados desde la carpeta original.

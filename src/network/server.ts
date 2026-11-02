@@ -38,13 +38,20 @@ server.on('upgrade',(req,socket,head)=>{
   const url=new URL(req.url??'/',`http://localhost:${port}`);
   if(url.pathname!=='/duel'){socket.destroy();return;}
   wss.handleUpgrade(req,socket,head,ws=>{
+    // A proxy may discard a close frame sent in the same turn as the upgrade.
+    // Send an application-level error first so browsers can display the reason.
+    const reject=(code:number,message:string)=>{
+      ws.on('error',()=>{});
+      ws.send(JSON.stringify({type:'error',message}));
+      const closing=setTimeout(()=>ws.close(code,message),300);closing.unref();
+    };
     const room=rooms.get(url.searchParams.get('room')??'');
-    if(!room){ws.close(4004,'La invitación no existe o venció.');return;}
+    if(!room){reject(4004,'La invitación no existe o venció.');return;}
     const token=url.searchParams.get('token');
     let index=token?room.tokens.indexOf(token):-1;
-    if(index>=0 && room.sockets[index]?.readyState===WebSocket.OPEN){ws.close(4003,'Esta plaza ya está abierta en otra pestaña.');return;}
+    if(index>=0 && room.sockets[index]?.readyState===WebSocket.OPEN){reject(4003,'Esta plaza ya está abierta en otra pestaña.');return;}
     if(index<0)index=room.tokens.indexOf(null);
-    if(index<0){ws.close(4003,'Sala completa: sólo dos jugadores.');return;}
+    if(index<0){reject(4003,'Sala completa: sólo dos jugadores.');return;}
     room.tokens[index]??=randomBytes(24).toString('base64url');room.sockets[index]=ws;room.duel.connected[index]=true;room.lastActive=Date.now();
     ws.send(JSON.stringify({type:'welcome',index,token:room.tokens[index]}));
     let messages=0,windowStart=Date.now();

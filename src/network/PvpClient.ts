@@ -21,10 +21,15 @@ export class PvpClient {
   async connect(): Promise<void> {
     return new Promise((resolve,reject)=>{
       const url = new URL('/duel',location.href);url.protocol=location.protocol==='https:'?'wss:':'ws:';url.searchParams.set('room',this.room);if(this.token)url.searchParams.set('token',this.token);
-      const ws=this.socket=new WebSocket(url);let welcomed=false;
+      const ws=this.socket=new WebSocket(url);let welcomed=false,rejected=false;
+      const deadline=setTimeout(()=>{if(!welcomed){rejected=true;reject(new Error('El servidor no respondió. Recarga para volver a conectar.'));ws.close();}},15000);
       ws.onmessage=event=>{
         const message=JSON.parse(event.data);
+        if(message.type==='error'){
+          clearTimeout(deadline);rejected=true;reject(new Error(message.message));ws.close();return;
+        }
         if(message.type==='welcome'){
+          clearTimeout(deadline);
           this.index=message.index;this.token=message.token;welcomed=true;
           try{sessionStorage.setItem('alalas-room-'+this.room,this.token);}catch{ /* Private mode */ }
           if(this.ping)clearInterval(this.ping);
@@ -35,6 +40,7 @@ export class PvpClient {
       };
       ws.onerror=()=>{if(!welcomed)reject(new Error('No se pudo conectar al servidor PvP. Abre JUGAR.cmd o verifica el enlace.'));};
       ws.onclose=event=>{
+        clearTimeout(deadline);if(rejected)return;
         if(this.ping)clearInterval(this.ping);
         if(!welcomed)reject(new Error(event.reason||'No se pudo abrir la sala.'));
         if(this.disposed)return;

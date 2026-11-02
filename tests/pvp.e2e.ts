@@ -1,13 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
-import { WebSocket } from 'ws';
 
 async function voice(page:Page):Promise<void>{
  await page.addInitScript(()=>{
   class Speech {
    static current:Speech; onstart?:()=>void;onend?:()=>void;onresult?:(e:unknown)=>void;
-   start(){Speech.current=this;this.onstart?.();}abort(){this.onend?.();}
+   results:unknown[]=[];
+   start(){this.results=[];Speech.current=this;this.onstart?.();}abort(){this.onend?.();}
   }
-  Object.assign(window,{SpeechRecognition:Speech,__say:(text:string)=>Speech.current.onresult?.({resultIndex:0,results:[{isFinal:true,length:1,0:{transcript:text,confidence:.99}}]})});
+  Object.assign(window,{SpeechRecognition:Speech,__say:(text:string)=>{const s=Speech.current;s.results.push({isFinal:true,length:1,0:{transcript:text,confidence:.99}});s.onresult?.({resultIndex:s.results.length-1,results:s.results});}});
  });
 }
 async function enable(page:Page):Promise<void>{
@@ -41,9 +41,16 @@ test('dos clientes invitan, eligen Avatar 01 y combaten por voz con salud consis
   await b.evaluate(()=>{(window as unknown as {__say:(s:string)=>void}).__say('ráfaga');});
   await expect.poll(()=>hp(a)).toBeLessThan(175);await expect.poll(()=>hp(b,true)).toBeLessThan(175);
   await a.screenshot({path:'docs/screenshots/pvp-player-one.png',fullPage:true});await b.screenshot({path:'docs/screenshots/pvp-player-two.png',fullPage:true});
-  const room=new URL(invite).searchParams.get('room')!;
-  const third=new WebSocket(`ws://127.0.0.1:4179/duel?room=${room}`);
-  const code=await new Promise<number>(resolve=>third.on('close',resolve));expect(code).toBe(4003);
+  const visitor=await browser.newContext();
+  try{const third=await visitor.newPage();await third.goto(invite);await expect(third.locator('#menu-error')).toContainText('Sala completa');}
+  finally{await visitor.close();}
+  await b.bringToFront();if(await b.getByRole('button',{name:'REANUDAR'}).isVisible())await b.getByRole('button',{name:'REANUDAR'}).click();
+  await expect(b.locator('#ability-barrage')).toHaveAttribute('data-state','ready',{timeout:15000});
+  await b.evaluate(()=>{(window as unknown as {__say:(s:string)=>void}).__say('ráfaga');});
+  await expect(b.locator('#pvp-state')).toContainText('Victoria');await expect(a.locator('#pvp-state')).toContainText('Derrota');
+  await a.getByRole('button',{name:'PEDIR REVANCHA'}).click();await b.getByRole('button',{name:'PEDIR REVANCHA'}).click();
+  await expect(a.locator('#pvp-state')).toHaveAttribute('data-round','2');await expect(b.locator('#pvp-state')).toHaveAttribute('data-round','2');
+  expect(await hp(a)).toBe(180);expect(await hp(b)).toBe(180);
   await b.close();await expect(a.locator('#pvp-state')).toHaveAttribute('data-status','disconnected');
   expect(errors).toEqual([]);
  }finally{await one.close();await two.close();}

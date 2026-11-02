@@ -18,7 +18,9 @@ La arena, barrera, unidades de 1 m y movimientos se reutilizan. Los enemigos de 
 
 pnpm build genera dist/ y server-dist/server.mjs. pnpm start inicia ambos desde el mismo servidor. PORT (o ALALAS_PORT) controla el puerto; HOST predetermina 127.0.0.1. Un alojamiento público necesita HOST=0.0.0.0, el puerto de la plataforma y HTTPS/WSS. /__alalas/status informa la versión y disponibilidad de PvP.
 
-Se verifica primero GitHub; después se prepara el Blueprint de Render. Esta prueba no requiere base de datos, disco persistente ni segundo servicio.
+GitHub se verificó antes del despliegue. El [Blueprint](https://dashboard.render.com/blueprint/exs-dbk074942hec73e8e080) ya sirve [el juego público](https://alalas-project.onrender.com) en plan Free. Usa Node 24, dependencias fijadas por pnpm-lock, preparación del modelo oficial de voz, PORT de Render, HOST=0.0.0.0 y health check. No requiere base de datos, disco persistente ni segundo servicio. Render proporciona HTTPS/WSS.
+
+Los rechazos de sala se transmiten como mensajes explícitos antes de cerrar WebSocket: un proxy puede perder un cierre enviado inmediatamente durante la apertura. El cliente limita además la espera de bienvenida a 15 s. Para ejecutar la prueba contra el servicio público, define ALALAS_TEST_URL=https://alalas-project.onrender.com y ejecuta pnpm exec playwright test tests/pvp.e2e.ts. Se crean salas temporales de prueba; no se usa un micrófono real.
 
 ## Pruebas y límites
 

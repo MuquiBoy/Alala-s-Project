@@ -4,6 +4,8 @@ Demo técnica 0.7.0 de combate 3D por voz, con entrenamiento individual y salas 
 
 Repositorio principal: [MuquiBoy/Alala-s-Project](https://github.com/MuquiBoy/Alala-s-Project). Conserva Three.js, TypeScript, Vite y Rapier.
 
+**[Abrir el juego online](https://alalas-project.onrender.com)** · [Blueprint de Render](https://dashboard.render.com/blueprint/exs-dbk074942hec73e8e080)
+
 ## Instalar desde GitHub
 
 Requisitos: Node.js **24**, pnpm **11.25.0**, Python **3** y Chrome o Edge de escritorio. Internet para instalar dependencias y descargar el modelo español (~39 MB).

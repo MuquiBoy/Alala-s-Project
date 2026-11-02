@@ -2,7 +2,13 @@
 
 2 de noviembre de 2026: compilación cliente/servidor y TypeScript correctos; **174 pruebas unitarias aprobadas y 14 pruebas de Chrome aprobadas**. Chrome sin ventana, silenciado y con un trabajador. Los dos clientes PvP usan contextos independientes, el servidor real y transcripciones simuladas. Se comprobaron invitación, selección, inicio, daño reflejado en ambos, rechazo de tercero y desconexión. La suite unitaria cubre las cuatro habilidades, colisiones, empuje, defensa, final de ronda y revancha. No se usó el micrófono del usuario.
 
-La comprobación desde una clonación de GitHub se registra separadamente al publicar. Las pruebas locales no acreditan por sí solas un despliegue público ni calidad con micrófonos humanos. Detalles en [PVP.md](PVP.md).
+## Copia publicada en GitHub
+
+Se verificó directamente la rama main, commit `24b31edab70d4edcd266a2959a569743527b129e`: 189 archivos, incluidos GLB, arena, sonidos, scripts, código, pruebas y lockfile. Se clonó en una carpeta nueva, se instalaron las dependencias con el lockfile congelado, se descargó y preparó el modelo oficial español, pasaron las 174 pruebas y se compilaron cliente y servidor. Desde esa copia se ejecutaron y pasaron tres escenarios de Chrome: carga de arena individual, partida con movimiento y ataques de ambos clientes, e invitación inválida. Sin archivos de trabajo ni recursos privados copiados desde la carpeta original.
+
+[GitHub Actions en Linux](https://github.com/MuquiBoy/Alala-s-Project/actions/runs/41469794531) confirmó instalación, preparación de voz, pruebas y compilación del mismo commit. Los 14 escenarios locales completaron sus comprobaciones; en la ejecución conjunta el proceso de cierre quedó esperando y se detuvo después de terminar. La ejecución focalizada de los dos escenarios PvP terminó correctamente (2/2).
+
+La configuración Render se añadió después de verificar GitHub. Las comprobaciones anteriores no acreditan por sí solas un despliegue público ni calidad con micrófonos humanos. Detalles en [PVP.md](PVP.md).
 
 ## Historial 0.5.2 — Embestida y entrenamiento
 

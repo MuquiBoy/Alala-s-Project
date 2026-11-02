@@ -78,6 +78,12 @@ pnpm test:browser
 
 Las pruebas de navegador requieren Chrome instalado y se ejecutan sin ventana, silenciadas, con un trabajador. El PvP usa dos contextos independientes y transcripciones simuladas; esto no valida acentos ni micrófonos humanos. [Verificación](docs/VERIFICATION.md) y [arquitectura PvP](docs/PVP.md).
 
+## Despliegue en Render
+
+El archivo [render.yaml](render.yaml) configura un único servicio Node en el plan **Free**, sin base de datos ni disco de pago. Conecta este repositorio a un Blueprint, rama main y ruta render.yaml. Compila cliente y servidor, prepara el modelo de voz y escucha el puerto que Render asigna. Comparte la dirección HTTPS generada por Render; cada sala obtiene su propio enlace.
+
+El plan gratuito puede suspender el servicio después de 15 minutos sin actividad y tardar alrededor de un minuto en reactivarse. Las salas en memoria se pierden al reiniciar o desplegar. Hay cuotas de horas, transferencia y compilación compartidas por el espacio de trabajo; no se configura ninguna ampliación de pago. [Condiciones del plan Free](https://render.com/docs/free).
+
 ## Límites
 
 Salas privadas sin cuentas, matchmaking ni persistencia. Desaparecen al reiniciar el servidor y vencen tras dos minutos sin conexiones. Hasta 16 salas como límite de protección, no como capacidad certificada bajo carga. El movimiento usa confirmación del servidor e interpolación; la latencia alta puede sentirse. La experiencia entre redes reales y micrófonos físicos requiere la prueba de ambos jugadores.

@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: alalas-project
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npx --yes pnpm@11.25.0 install --frozen-lockfile --prod=false && python3 scripts/prepare_voice_model.py && npx --yes pnpm@11.25.0 build
+    startCommand: node server-dist/server.mjs
+    healthCheckPath: /__alalas/status
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: HOST
+        value: "0.0.0.0"

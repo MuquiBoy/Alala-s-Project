@@ -11,3 +11,5 @@ Paleta base: grafito, gris azulado y texto claro. Ámbar se reserva para habilid
 Las habilidades incluyen símbolos SVG propios (llama, proyectiles, escudo y avance). Su estado activo enciende símbolo, nombre y las cuatro esquinas con un acento ámbar; la recarga atenúa el símbolo. Integridad tiene símbolo, cifra y barra. Tipografía técnica condensada con alternativas locales, sin depender de fuentes descargadas.
 
 Verificación: compilación cliente/servidor correcta. Suite de navegador: 13 casos aprobados y una expectativa antigua del minimapa actualizada; su repetición focalizada pasó. Tras los símbolos y esquinas, pasaron de nuevo el caso de voz/movimiento y los dos escenarios PvP (combate, salud, resultado y revancha, sala llena e invitación inválida). Las transcripciones son simuladas y Chrome se ejecutó sin ventanas, silenciado.
+
+Ajuste de jerarquía: tarjetas cuadradas (proporción 1:1) con solo símbolo, nombre y número visibles. Los textos de estado y tiempo siguen en el DOM para diagnóstico; la barra inferior y la luz comunican recarga/actividad sin alargar la tarjeta.

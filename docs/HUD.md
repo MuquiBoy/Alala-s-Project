@@ -13,3 +13,5 @@ Las habilidades incluyen símbolos SVG propios (llama, proyectiles, escudo y ava
 Verificación: compilación cliente/servidor correcta. Suite de navegador: 13 casos aprobados y una expectativa antigua del minimapa actualizada; su repetición focalizada pasó. Tras los símbolos y esquinas, pasaron de nuevo el caso de voz/movimiento y los dos escenarios PvP (combate, salud, resultado y revancha, sala llena e invitación inválida). Las transcripciones son simuladas y Chrome se ejecutó sin ventanas, silenciado.
 
 Ajuste de jerarquía: tarjetas cuadradas (proporción 1:1) con solo símbolo, nombre y número visibles. Los textos de estado y tiempo siguen en el DOM para diagnóstico; la barra inferior y la luz comunican recarga/actividad sin alargar la tarjeta.
+
+Proporciones corregidas: cámara de tercera persona con altura mínima de 225 px (220 px en escritorios bajos), imagen que ocupa el ancho del módulo y bloques superiores compactados. Compilación y prueba de carga en Chrome aprobadas.

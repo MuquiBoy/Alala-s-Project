@@ -43,4 +43,12 @@ describe('duelo autoritativo con las habilidades originales',()=>{
   expect(d.round).toBe(3);expect(d.snapshot().actors.every(actor=>actor.projectiles.length===0&&actor.shots===0)).toBe(true);
   d.dispose();
  });
+ it('valida sprint en servidor, cancela para Embestida y restaura resistencia en revancha',()=>{
+  const d=match();d.inputs[0].forward=1;d.inputs[0].sprint=true;step(d,102);
+  expect(d.actors[0].motor!.speed).toBeCloseTo(4,2);expect(d.snapshot().actors[0].sprint.stamina).toBeCloseTo(83,1);
+  expect(d.actors[0].definition.massKg).toBe(500);expect(d.actors[0].definition.movement.speed).toBe(.8);
+  expect(d.attack(0,'charge','run-charge').accepted).toBe(true);step(d,1);
+  expect(d.actors[0].motor!.speed).toBeLessThanOrEqual(.121);expect(d.actors[0].motor!.sprint.active).toBe(false);
+  d.actors[1].health=0;step(d,1);d.vote(0);d.vote(1);expect(d.actors[0].motor!.sprint.stamina).toBe(100);d.dispose();
+ });
 });

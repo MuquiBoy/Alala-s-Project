@@ -1,4 +1,4 @@
-export interface MovementInput { forward: number; right: number }
+export interface MovementInput { forward: number; right: number; sprint?: boolean }
 
 /** No attack keys or mouse attack actions: input is exclusively locomotion + look. */
 export class PlayerInput {
@@ -12,7 +12,7 @@ export class PlayerInput {
     window.addEventListener('keydown', event => {
       if (!this.locked || event.ctrlKey || event.altKey || event.metaKey) return;
       if (event.code === 'Escape') { this.unlock(); return; }
-      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(event.code)) event.preventDefault();
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'ShiftRight'].includes(event.code)) event.preventDefault();
       this.keys.add(event.code);
     }, options);
     window.addEventListener('keyup', event => this.keys.delete(event.code), options);
@@ -36,7 +36,7 @@ export class PlayerInput {
   clear(): void { this.keys.clear(); this.deltaX = 0; this.deltaY = 0; }
 
   movement(): MovementInput {
-    return { forward: Number(this.keys.has('KeyW')) - Number(this.keys.has('KeyS')), right: Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA')) };
+    return { sprint: this.keys.has('ShiftLeft') || this.keys.has('ShiftRight'), forward: Number(this.keys.has('KeyW')) - Number(this.keys.has('KeyS')), right: Number(this.keys.has('KeyD')) - Number(this.keys.has('KeyA')) };
   }
 
   consumeLook(): { x: number; y: number } {

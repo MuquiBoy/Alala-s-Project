@@ -104,7 +104,7 @@ export class TankAnimation {
           .add(this.root.position).addScaledVector(new THREE.Vector3(input.velocity.x, 0, input.velocity.z), forecast);
         destination.y = feet.y + leg.ankleHeight;
         leg.target.lerpVectors(leg.start, destination, smooth(u));
-        leg.target.y += Math.sin(Math.PI * u) * config.footLift;
+        leg.target.y += Math.sin(Math.PI * u) * (config.footLift + state.weights.run * .09);
         leg.orientation.copy(new THREE.Quaternion().setFromAxisAngle(up, state.yaw)).multiply(leg.flat);
       } else {
         if (leg.swinging) {

@@ -1,6 +1,6 @@
 /** Authored GLB is already Y-up, -Z forward, 2.5 m high. Never rescale its rig. */
 export const TANK_LOCOMOTION = {
-  clips: { idle: 'Idle_Mechanical', forward: 'Walk_Heavy', backward: 'Walk_Backward', left: 'WalkTurn_Left', right: 'WalkTurn_Right' },
+  clips: { run: 'Run_Stampede', idle: 'Idle_Mechanical', forward: 'Walk_Heavy', backward: 'Walk_Backward', left: 'WalkTurn_Left', right: 'WalkTurn_Right' },
   cycleDistance: 1.28,
   swingFraction: 0.22,
   blendSeconds: 0.2,

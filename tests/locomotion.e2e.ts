@@ -10,7 +10,7 @@ test('el GLB real camina, retrocede, gira y separa cabeza/chasis; pausa y reinic
   page.on('response', response => { if (response.ok()) resources.push(response.url()); });
   await page.goto('/?mode=solo&quality=low');
   await expect(page.locator('#avatar-live')).toHaveAttribute('data-ready', 'true');
-  expect(resources.some(url => url.endsWith('avatar-01_rigged_v2.glb'))).toBe(true);
+  expect(resources.some(url => url.endsWith('avatar-01_rigged_v3.glb'))).toBe(true);
   await page.getByRole('button', { name: 'ENTRAR EN LA ARENA' }).click();
   await expect(page.locator('#state')).toHaveText('EXPLORANDO');
   // Deterministic relative mouse input: the normal Pointer Lock listener receives it.

@@ -95,3 +95,5 @@ Salas privadas sin cuentas, matchmaking ni persistencia. Desaparecen al reinicia
 Los originales Blender y materiales de trabajo permanecen locales; el GLB publicado contiene lo necesario para jugar. El audio de referencia de Cell no se incluye ni se usa como muestra. Los avisos y licencias de terceros permanecen junto a cada recurso.
 
 El [HUD neutral](docs/HUD.md) prioriza la vista FPS, con retrato 2D preparado y cámara de tercera persona debajo del moveset. El minimapa permanece disponible internamente y oculto en esta distribución.
+
+Avatar 01 dispone de [carrera y resistencia](docs/SPRINT.md): Shift + W, máximo 4 m/s, 10 s de resistencia; A/D giran y S frena. La marcha base conserva 0.8 m/s.

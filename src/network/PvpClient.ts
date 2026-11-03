@@ -83,7 +83,7 @@ export class PvpClient {
     const alpha=snap||distance>3?1:1-Math.exp(-Math.min(.1,dt)*22);
     const feet={x:current.x+(snapshot.feet.x-current.x)*alpha,y:current.y+(snapshot.feet.y-current.y)*alpha,z:current.z+(snapshot.feet.z-current.z)*alpha};
     const center={...feet,y:feet.y+actor.definition.collision.height/2};motor.body.setTranslation(center,true);motor.body.setNextKinematicTranslation(center);
-    motor.actualVelocity=snapshot.velocity;motor.requestedVelocity=snapshot.velocity;motor.grounded=snapshot.grounded;
+    Object.assign(motor.sprint,snapshot.sprint);motor.actualVelocity=snapshot.velocity;motor.requestedVelocity=snapshot.velocity;motor.grounded=snapshot.grounded;
     actor.health=snapshot.health;actor.aim(feet,snapshot.input.yaw,snapshot.input.pitch);actor.abilities.applyNetwork(snapshot.abilities);
     actor.remoteVisual={projectiles:snapshot.projectiles,impacts:snapshot.impacts,shots:snapshot.shots};
     actor.impactCount=snapshot.impactCount;actor.lastImpactAt=snapshot.lastImpactAt??-Infinity;actor.lastImpact=snapshot.lastImpact;

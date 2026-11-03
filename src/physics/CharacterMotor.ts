@@ -1,3 +1,4 @@
+import { SprintState } from './SprintState';
 import RAPIER from '@dimforge/rapier3d-compat';
 import type { CreatureDefinition, Vec3 } from '../config/types';
 import { MOTION_PHYSICS } from '../config/physics';
@@ -24,6 +25,7 @@ export class CharacterMotor {
   readonly contacts: MotorContact[] = [];
   requestedVelocity: Vec3 = { x: 0, y: 0, z: 0 };
   actualVelocity: Vec3 = { x: 0, y: 0, z: 0 };
+  readonly sprint = new SprintState();
   massKg: number;
   grounded = false;
 
@@ -48,6 +50,9 @@ export class CharacterMotor {
   update(input: MovementInput, yaw: number, dt: number, modifiers: MotionModifiers = {}): void {
     if (modifiers.verticalImpulse !== undefined) this.velocity.y = Math.max(this.velocity.y, modifiers.verticalImpulse);
     const desired = desiredVelocity(input, yaw, this.definition.movement.speed * (modifiers.speedMultiplier ?? 1));
+    const sprintVelocity = this.sprint.update(dt,input.forward,input.right,!!input.sprint,yaw,this.definition.movement.speed,this.definition.abilities.includes('charge'),(modifiers.speedMultiplier ?? 1)<1 || !!modifiers.planarDisplacement);
+    if(sprintVelocity){this.velocity.x=sprintVelocity.x;this.velocity.z=sprintVelocity.z;desired.x=sprintVelocity.x;desired.z=sprintVelocity.z;}
+    else if((modifiers.speedMultiplier ?? 1)<1){const cap=this.definition.movement.speed*(modifiers.speedMultiplier??1);const n=Math.hypot(this.velocity.x,this.velocity.z);if(n>cap){this.velocity.x*=cap/n;this.velocity.z*=cap/n;}}
     const dx = desired.x - this.velocity.x;
     const dz = desired.z - this.velocity.z;
     const length = Math.hypot(dx, dz);
@@ -105,13 +110,13 @@ export class CharacterMotor {
     if (momentum.y > 0) this.grounded = false;
     return { x: this.reactionVelocity.x - before.x, y: this.velocity.y - before.y, z: this.reactionVelocity.z - before.z };
   }
-  stop(): void { this.velocity = { x: 0, y: 0, z: 0 }; this.reactionVelocity = { x: 0, z: 0 }; this.requestedVelocity = { x: 0, y: 0, z: 0 }; this.actualVelocity = { x: 0, y: 0, z: 0 }; this.contacts.length = 0; }
+  stop(): void { this.sprint.active=false;this.sprint.coasting=false;this.sprint.speed=0; this.velocity = { x: 0, y: 0, z: 0 }; this.reactionVelocity = { x: 0, z: 0 }; this.requestedVelocity = { x: 0, y: 0, z: 0 }; this.actualVelocity = { x: 0, y: 0, z: 0 }; this.contacts.length = 0; }
 
   reset(spawn: Vec3): void {
     const position = { x: spawn.x, y: spawn.y + this.halfHeight, z: spawn.z };
     this.body.setTranslation(position, true);
     this.body.setNextKinematicTranslation(position);
-    this.stop(); this.grounded = false;
+    this.stop(); this.sprint.reset(); this.grounded = false;
     this.physics.world.step();
   }
 

@@ -3,7 +3,7 @@ import { TANK_LOCOMOTION as config } from '../config/locomotion';
 
 export type GaitName = keyof typeof config.clips;
 export interface LocomotionInput {
-  velocity: Vec3; forward: number; right: number; aimYaw: number; grounded: boolean; suspended: boolean; coasting?: boolean;
+  velocity: Vec3; forward: number; right: number; aimYaw: number; grounded: boolean; suspended: boolean; coasting?: boolean; sprintHeading?: number;
 }
 export const wrapAngle = (angle: number): number => Math.atan2(Math.sin(angle), Math.cos(angle));
 const approach = (value: number, target: number, amount: number): number => value + Math.max(-amount, Math.min(amount, target - value));
@@ -17,7 +17,7 @@ export class TankLocomotion {
   speed = 0;
   moving = false;
   idleTime = 0;
-  readonly weights: Record<GaitName, number> = { idle: 1, forward: 0, backward: 0, left: 0, right: 0 };
+  readonly weights: Record<GaitName, number> = { run: 0, idle: 1, forward: 0, backward: 0, left: 0, right: 0 };
   constructor(private readonly maxTurnRate: number) {}
 
   update(dt: number, input: LocomotionInput): void {
@@ -28,9 +28,9 @@ export class TankLocomotion {
     let reverse = 0, turn = 0;
     if (this.moving) {
       const motionYaw = Math.atan2(-input.velocity.x, -input.velocity.z);
-      const desiredYaw = steering ? motionYaw + (input.forward < 0 ? Math.PI : 0) : this.yaw;
+      const desiredYaw = input.sprintHeading ?? (steering ? motionYaw + (input.forward < 0 ? Math.PI : 0) : this.yaw);
       const error = wrapAngle(desiredYaw - this.yaw);
-      const targetRate = Math.max(-this.maxTurnRate, Math.min(this.maxTurnRate, error * 3));
+      const targetRate = Math.max(-Math.max(this.maxTurnRate,this.speed>0.81?1.8:0), Math.min(Math.max(this.maxTurnRate,this.speed>0.81?1.8:0), error * 3));
       this.yawRate = approach(this.yawRate, targetRate, config.turnAcceleration * dt);
       const rotation = Math.abs(error) < Math.abs(this.yawRate * dt) ? error : this.yawRate * dt;
       this.yaw = wrapAngle(this.yaw + rotation);
@@ -38,16 +38,17 @@ export class TankLocomotion {
       reverse = Math.max(0, Math.min(1, (-Math.cos(wrapAngle(motionYaw - this.yaw)) - 0.05) / 0.35));
       turn = Math.min(0.85, Math.abs(this.yawRate) / this.maxTurnRate);
       // Curved travel includes the outside foot's rotational arc, not just root distance.
-      this.frequency = (this.speed + Math.abs(this.yawRate) * 1.15) / config.cycleDistance;
+      this.frequency = (this.speed + Math.abs(this.yawRate) * 1.15) / (config.cycleDistance + Math.max(0,Math.min(1,(this.speed-.8)/3.2)) * (2.4-config.cycleDistance));
       this.phase += this.frequency * dt;
     } else { this.yawRate = 0; this.frequency = 0; }
     const movingWeight = this.moving ? 1 : 0;
+    const run = movingWeight * (input.sprintHeading === undefined ? 0 : 1) * Math.max(0,Math.min(1,(this.speed-.8)/3.2));
     const targets: Record<GaitName, number> = {
-      idle: 1 - movingWeight,
-      forward: movingWeight * (1 - reverse) * (1 - turn),
-      backward: movingWeight * reverse * (1 - turn),
-      left: movingWeight * turn * (this.yawRate >= 0 ? 1 : 0),
-      right: movingWeight * turn * (this.yawRate < 0 ? 1 : 0),
+      run, idle: 1 - movingWeight,
+      forward: (movingWeight-run) * (1 - reverse) * (1 - turn),
+      backward: (movingWeight-run) * reverse * (1 - turn),
+      left: (movingWeight-run) * turn * (this.yawRate >= 0 ? 1 : 0),
+      right: (movingWeight-run) * turn * (this.yawRate < 0 ? 1 : 0),
     };
     const blend = 1 - Math.exp(-dt / config.blendSeconds);
     for (const name of Object.keys(this.weights) as GaitName[]) this.weights[name] += (targets[name] - this.weights[name]) * blend;

@@ -61,7 +61,7 @@ server.on('upgrade',(req,socket,head)=>{
       if(!m||typeof m!=='object')return;
       if(m.type==='input'){
         if(![m.forward,m.right,m.yaw,m.pitch].every(v=>typeof v==='number'&&Number.isFinite(v)))return;
-        room.duel.inputs[index]={forward:Math.max(-1,Math.min(1,m.forward)),right:Math.max(-1,Math.min(1,m.right)),yaw:Math.atan2(Math.sin(m.yaw),Math.cos(m.yaw)),pitch:Math.max(-1.4,Math.min(1.4,m.pitch)),active:m.active===true};
+        room.duel.inputs[index]={forward:Math.max(-1,Math.min(1,m.forward)),right:Math.max(-1,Math.min(1,m.right)),yaw:Math.atan2(Math.sin(m.yaw),Math.cos(m.yaw)),pitch:Math.max(-1.4,Math.min(1.4,m.pitch)),active:m.active===true,sprint:m.sprint===true};
         room.lastInput[index]=now;
       }else if(m.type==='select'&&m.creature==='avatar-01'&&room.duel.connected.every(Boolean))room.duel.select(index);
       else if(m.type==='prepared'&&room.duel.ready[index])room.duel.prepare(index);

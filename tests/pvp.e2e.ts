@@ -62,3 +62,21 @@ test('inicio conserva solitario y una invitación inexistente falla claramente',
  await page.goto('/');await expect(page.getByRole('link',{name:'Jugar en solitario'})).toBeVisible();
  await page.goto('/?room=aaaaaaaaaaaaaaaaaaaaaaaa');await expect(page.locator('#menu-error')).toContainText(/no existe|venció/);
 });
+
+test('sprint PvP: resistencia propia, velocidad autoritativa y carrera del GLB',async({browser})=>{
+ test.setTimeout(90000);
+ const one=await browser.newContext(),two=await browser.newContext();const a=await one.newPage(),b=await two.newPage();
+ try{
+  await voice(a);await voice(b);await a.goto('/');await a.getByRole('button',{name:'Multijugador PvP'}).click();await expect(a.locator('#invite-link')).not.toHaveValue('');
+  await b.goto(await a.locator('#invite-link').inputValue());await expect(a.locator('#room-message')).toContainText('2/2');
+  for(const p of [a,b])await p.getByRole('button',{name:'CONFIRMAR AVATAR 01'}).click();
+  await enable(a);await enable(b);await expect(b.locator('#pvp-state')).toHaveAttribute('data-status','playing');
+  await b.keyboard.down('Shift');await b.keyboard.down('w');
+  await expect.poll(async()=>parseFloat(await b.locator('#speed').innerText())).toBeGreaterThan(3.5);
+  await expect.poll(async()=>JSON.parse(await b.locator('#avatar-live').getAttribute('data-weights')??'{}').run).toBeGreaterThan(.6);
+  expect(await b.locator('#stamina').evaluate((e:HTMLProgressElement)=>e.value)).toBeLessThan(95);
+  expect(await a.locator('#stamina').evaluate((e:HTMLProgressElement)=>e.value)).toBe(100);
+  await b.screenshot({path:'docs/screenshots/stampede-pvp.png',fullPage:true});
+  await b.keyboard.up('Shift');await b.keyboard.up('w');await expect.poll(async()=>parseFloat(await b.locator('#speed').innerText())).toBeLessThan(.1);
+ }finally{await one.close();await two.close();}
+});

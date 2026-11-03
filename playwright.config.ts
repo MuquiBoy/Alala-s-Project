@@ -1,5 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
+const localUrl = `http://127.0.0.1:${process.env.ALALAS_PORT ?? 4179}`;
 const publicServer = process.env.ALALAS_TEST_URL;
 
 export default defineConfig({
@@ -12,7 +13,7 @@ export default defineConfig({
   use: {
     channel: 'chrome',
     headless: true,
-    baseURL: publicServer ?? 'http://127.0.0.1:4179',
+    baseURL: publicServer ?? localUrl,
     viewport: { width: 1600, height: 1000 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
@@ -20,7 +21,7 @@ export default defineConfig({
   },
   webServer: publicServer ? undefined : {
     command: 'node server-dist/server.mjs',
-    url: 'http://127.0.0.1:4179/__alalas/status',
+    url: localUrl + '/__alalas/status',
     reuseExistingServer: !process.env.CI,
     timeout: 15000,
   },

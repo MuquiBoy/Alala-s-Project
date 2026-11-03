@@ -72,7 +72,7 @@ export class Duel {
   snapshot(): RoomState {
     return {type:'state',room:this.id,status:this.status,winner:this.winner,round:this.round,connected:[...this.connected],ready:[...this.ready],prepared:[...this.prepared],rematch:[...this.rematch],
       actors:this.actors.map((actor,i)=>({id:actor.definition.id,feet:actor.motor!.feet,velocity:actor.motor!.actualVelocity,grounded:actor.motor!.grounded,health:actor.health,input:{...this.inputs[i]},
-        abilities:actor.abilities.networkState(),heat:Array.from(actor.heat.tiles.values()),projectiles:[...actor.barrageProjectiles],impacts:[...actor.barrageImpacts],shots:actor.barrageShotsFired,
+        sprint:{...actor.motor!.sprint},abilities:actor.abilities.networkState(),heat:Array.from(actor.heat.tiles.values()),projectiles:[...actor.barrageProjectiles],impacts:[...actor.barrageImpacts],shots:actor.barrageShotsFired,
         impactCount:actor.impactCount,lastImpactAt:Number.isFinite(actor.lastImpactAt)?actor.lastImpactAt:null,lastImpact:actor.lastImpact}))};
   }
   dispose():void{this.actors.forEach(a=>a.motor!.dispose());this.physics.dispose();}

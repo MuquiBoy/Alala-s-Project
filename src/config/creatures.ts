@@ -18,7 +18,7 @@ export const AVATAR_01: CreatureDefinition = {
 export const THERMAL_TANK: CreatureDefinition = {
   ...AVATAR_01,
   name: 'Avatar 01',
-  model: { kind: 'gltf', url: 'models/avatar-01/avatar-01_rigged_v2.glb', scale: 1 },
+  model: { kind: 'gltf', url: 'models/avatar-01/avatar-01_rigged_v3.glb', scale: 1 },
   collision: { radius: 1.5, height: 2.5, width: 3, depth: 3 },
   movement: { speed: 0.8, acceleration: 1.6, deceleration: 2.4, turnSpeed: 0.7 },
   massKg: 500,

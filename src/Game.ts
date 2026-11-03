@@ -238,7 +238,7 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
         if(fresh){fpsCamera.yaw=network.state!.actors[network.index].input.yaw;fpsCamera.pitch=0;animation?.reset();opponentAnimation?.reset();landing?.reset();flameAudio.reset();combatCueAudio.reset();footsteps?.silence();landingAudio?.silence();clock.reset();previous.set(motor.feet.x,motor.feet.y,motor.feet.z);current.copy(previous);}
         network.input({...input.movement(),yaw:fpsCamera.yaw,pitch:fpsCamera.pitch,active:state.value==='playing'});
         const remote=network.state?.actors[1-network.index];
-        if(remote)opponentAnimation?.update(Math.min(frame,.1),opponent.motor!.feet,{...remote.input,aimYaw:remote.input.yaw,velocity:remote.velocity,grounded:remote.grounded,
+        if(remote)opponentAnimation?.update(Math.min(frame,.1),opponent.motor!.feet,{...remote.input,aimYaw:remote.input.yaw,velocity:remote.velocity,grounded:remote.grounded,coasting:remote.sprint.coasting,sprintHeading:remote.sprint.coasting?remote.sprint.heading:undefined,
           suspended:network.state?.status!=='playing'||(opponent.abilities.active('charge')&&opponent.abilities.elapsed('charge')>=2)});
       }
       if (fpsTime >= 0.5) { displayFps = fpsFrames / fpsTime; fpsTime = 0; fpsFrames = 0; }
@@ -253,7 +253,7 @@ export async function startCombatDemo(network?: PvpClient): Promise<void> {
           }
           const chargingImpulse = combat!.abilities.active('charge') && combat!.abilities.elapsed('charge') >= (abilityById('charge').windup ?? 0);
           const contacts = animation?.update(dt, motor!.feet, { ...input!.movement(), velocity: motor!.actualVelocity, aimYaw: fpsCamera.yaw,
-            grounded: motor!.grounded, coasting: motor!.speed > 0.018, suspended: combat!.abilities.active('charge_dash') || chargingImpulse || (!!network && (!network.connected || network.state?.status!=='playing')) }) ?? [];
+            sprintHeading: motor!.sprint.coasting?motor!.sprint.heading:undefined, grounded: motor!.grounded, coasting: motor!.sprint.coasting || motor!.speed > 0.018, suspended: combat!.abilities.active('charge_dash') || chargingImpulse || (!!network && (!network.connected || network.state?.status!=='playing')) }) ?? [];
           for (const contact of contacts) footsteps?.play(contact.index, contact.strength);
           const landed = landing?.advance(dt, motor!.feet.y, motor!.grounded, chargingImpulse);
           if (landed) landingAudio?.play(landed.intensity);

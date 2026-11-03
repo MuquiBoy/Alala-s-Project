@@ -50,6 +50,7 @@ export class CombatHud {
     root.querySelector('#entry-copy')!.textContent = 'Tanque cuadrúpedo de 500 kg. Entrena contra cuatro enemigos magenta reactivos y un blanco verde aéreo.';
     const guide = root.querySelector('#help-dialog p:last-of-type');
     if (guide) guide.textContent = 'Di «Lanzallamas», «Ráfaga», «Blindaje» o «Embestida». Los cuatro magenta permanecen pasivos hasta recibir daño y luego responden con proyectiles. El verde salta y no ataca. Activa la voz antes de entrar. Esc pausa y cierra el micrófono; al reanudar vuelve a escuchar si lo autorizaste. Diagnóstico muestra masa, impulso y estados de entrenamiento.';
+    root.querySelector('.metrics')!.insertAdjacentHTML('afterend','<div class="stamina-module"><label for="stamina">RESISTENCIA · SHIFT + W</label><progress id="stamina" max="100" value="100"></progress><span id="stamina-state">LISTO · 100</span></div>');
     const toolbar = document.createElement('div'); toolbar.className = 'session-toolbar';
     toolbar.innerHTML = '<div class="voice-status"><i id="mic-dot"></i><span id="voice-state">MICRÓFONO INACTIVO</span></div><span id="voice-confirmation">DI «LANZALLAMAS» · «RÁFAGA» · «BLINDAJE» · «EMBESTIDA»</span><button id="voice-settings" class="secondary-button">CONFIGURAR VOZ</button><button id="debug-toggle" class="text-button" aria-expanded="false">DIAGNÓSTICO</button>';
     root.querySelector('.workspace')!.before(toolbar);
@@ -142,6 +143,8 @@ export class CombatHud {
       `antes ${vec(impact.attackerBefore)} / ${vec(impact.targetBefore)} · después ${vec(impact.attackerAfter)} / ${vec(impact.targetAfter)} · desplazamiento del blanco ${Math.hypot(combat.targets.find(target => target.id === impact.targetId)!.motor.feet.x - impact.targetStart.x, combat.targets.find(target => target.id === impact.targetId)!.motor.feet.z - impact.targetStart.z).toFixed(2)} m` : 'Sin impacto de Embestida.';
     const shot = combat.lastProjectileHit;
     document.querySelector('#projectile-report')!.textContent = shot ? `Proyectil ${shot.ownerId} → ${shot.targetId}: ${shot.damage.toFixed(1)} daño · Blindaje ${shot.armored ? 'activo' : 'inactivo'}` : 'Sin impactos de proyectil enemigo.';
+    const stamina=combat.motor?.sprint;
+    if(stamina){(document.querySelector('#stamina') as HTMLProgressElement).value=stamina.stamina;document.querySelector('#stamina-state')!.textContent=`${stamina.exhausted?'AGOTADO':stamina.active?'CORRIENDO':stamina.stamina<100?'RECUPERANDO':'LISTO'} · ${Math.ceil(stamina.stamina)}`;}
     const signature = snapshots.map(s => `${s.state}:${s.remaining.toFixed(1)}`).join('|') + ':' + combat.health.toFixed(1) + ':' + combat.targets.map(t => t.health.toFixed(1)).join('|');
     if (signature === this.lastSignature) return; this.lastSignature = signature;
     for (const snapshot of snapshots) {

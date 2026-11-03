@@ -11,7 +11,7 @@ const forward: LocomotionInput = { velocity: { x: 0, y: 0, z: -.8 }, forward: 1,
 let template: THREE.Group;
 beforeAll(async () => {
   // Load the real exported hierarchy, skin weights and clips. Image decoding is covered in Chrome.
-  const glb = readFileSync('public/models/avatar-01/avatar-01_rigged_v2.glb');
+  const glb = readFileSync('public/models/avatar-01/avatar-01_rigged_v3.glb');
   const length = glb.readUInt32LE(12), json = JSON.parse(glb.subarray(20, 20 + length).toString());
   delete json.images; delete json.textures; delete json.materials;
   for (const mesh of json.meshes) for (const primitive of mesh.primitives) delete primitive.material;
@@ -71,9 +71,9 @@ describe('locomoción cuadrúpeda integrada', () => {
     expect(animation.stepIndex).toBe(0);
     animation.reset(); expect(animation.locomotion.phase).toBe(0); expect(animation.lastImpact).toBe(-100);
   });
-  it('mantiene la respiración, las seis acciones y la geometría original del recurso', () => {
+  it('mantiene la respiración, las siete acciones y la geometría original del recurso', () => {
     const animation = actor();
-    expect(animation.root.animations).toHaveLength(6);
+    expect(animation.root.animations).toHaveLength(7);
     let triangles = 0, max = 0, min = Infinity;
     animation.root.traverse(object => { if (object instanceof THREE.Mesh) triangles += (object.geometry.index?.count ?? object.geometry.attributes.position.count) / 3; });
     expect(triangles).toBe(1338);
@@ -100,4 +100,13 @@ describe('locomoción cuadrúpeda integrada', () => {
     expect(worst).toBeLessThan(.35);
     expect(animation.stepIndex).toBeGreaterThan(20);
   });
+ it('mezcla estampida y frenado conservando huesos y contactos de cuatro patas',()=>{
+  const a=actor();const contacts=new Set<string>();let z=0;
+  for(let i=0;i<360;i++){const speed=i<120?.8+3.2*i/120:i<240?4:4-3.2*(i-240)/120;z-=speed/60;
+    for(const c of a.update(1/60,{x:0,y:0,z},{...forward,velocity:{x:0,y:0,z:-speed},sprintHeading:0,coasting:true}))contacts.add(c.foot);
+    expect(a.legs.every(l=>Number.isFinite(l.error))).toBe(true);
+    if(i===239)expect(a.locomotion.weights.run).toBeGreaterThan(.9);
+  }
+  expect(contacts.size).toBe(4);expect(a.locomotion.weights.run).toBeLessThan(.2);
+ });
 });

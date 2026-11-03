@@ -71,12 +71,12 @@ test('sprint PvP: resistencia propia, velocidad autoritativa y carrera del GLB',
   await b.goto(await a.locator('#invite-link').inputValue());await expect(a.locator('#room-message')).toContainText('2/2');
   for(const p of [a,b])await p.getByRole('button',{name:'CONFIRMAR AVATAR 01'}).click();
   await enable(a);await enable(b);await expect(b.locator('#pvp-state')).toHaveAttribute('data-status','playing');
-  await b.keyboard.down('Shift');await b.keyboard.down('w');
+  await b.keyboard.down('Shift');await b.keyboard.down('w');await b.keyboard.down('d');
   await expect.poll(async()=>parseFloat(await b.locator('#speed').innerText())).toBeGreaterThan(3.5);
   await expect.poll(async()=>JSON.parse(await b.locator('#avatar-live').getAttribute('data-weights')??'{}').run).toBeGreaterThan(.6);
   expect(await b.locator('#stamina').evaluate((e:HTMLProgressElement)=>e.value)).toBeLessThan(95);
   expect(await a.locator('#stamina').evaluate((e:HTMLProgressElement)=>e.value)).toBe(100);
   await b.screenshot({path:'docs/screenshots/stampede-pvp.png',fullPage:true});
-  await b.keyboard.up('Shift');await b.keyboard.up('w');await expect.poll(async()=>parseFloat(await b.locator('#speed').innerText())).toBeLessThan(.1);
+  await b.keyboard.up('Shift');await b.keyboard.up('w');await b.keyboard.up('d');await expect.poll(async()=>parseFloat(await b.locator('#speed').innerText())).toBeLessThan(.1);
  }finally{await one.close();await two.close();}
 });

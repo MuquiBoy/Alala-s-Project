@@ -6,8 +6,8 @@ export class SprintState {
     const wants=enabled&&!blocked&&held&&forward>0&&!this.exhausted;
     if(wants&&!this.coasting){this.heading=yaw;this.speed=base;this.coasting=true;}
     this.active=wants&&this.stamina>0;
-    if(this.active){this.stamina=Math.max(0,this.stamina-C.drain*dt);this.recovery=C.regenDelay;if(this.stamina===0){this.exhausted=true;this.active=false;}}
-    else {const available=Math.max(0,dt-this.recovery);this.recovery=Math.max(0,this.recovery-dt);this.stamina=Math.min(C.maximum,this.stamina+C.regen*available);if(this.stamina>=C.restart)this.exhausted=false;}
+    if(this.active){this.stamina=Math.max(0,this.stamina-C.drain*dt);this.recovery=C.regenDelay;if(this.stamina===0){this.exhausted=true;this.active=false;this.recovery=C.exhaustionDelay;}}
+    else {const available=Math.max(0,dt-this.recovery);this.recovery=Math.max(0,this.recovery-dt);this.stamina=Math.min(C.maximum,this.stamina+(this.exhausted?C.exhaustedRegen:C.regen)*available);if(this.exhausted&&this.stamina>=C.restart-1e-6){this.stamina=Math.max(this.stamina,C.restart);this.exhausted=false;}}
     if(!this.coasting)return null;
     const target=this.active?C.speed:forward>0?base:0;
     const rate=(C.speed-base)/(this.active?C.accelerationSeconds:C.brakingSeconds);

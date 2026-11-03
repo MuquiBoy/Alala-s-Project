@@ -1,1 +1,1 @@
-export const SPRINT = { speed: 4, accelerationSeconds: 1.7, brakingSeconds: 1.2, turnRate: 70 * Math.PI / 180, maximum: 100, drain: 10, regenDelay: 1.5, regen: 15, restart: 20 } as const;
+export const SPRINT = { speed: 4, accelerationSeconds: 1.7, brakingSeconds: 1.2, turnRate: 70 * Math.PI / 180, maximum: 100, drain: 10, regenDelay: 1.5, regen: 15, exhaustionDelay: 2.5, exhaustedRegen: 8, restart: 50 } as const;

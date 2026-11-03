@@ -144,7 +144,7 @@ export class CombatHud {
     const shot = combat.lastProjectileHit;
     document.querySelector('#projectile-report')!.textContent = shot ? `Proyectil ${shot.ownerId} → ${shot.targetId}: ${shot.damage.toFixed(1)} daño · Blindaje ${shot.armored ? 'activo' : 'inactivo'}` : 'Sin impactos de proyectil enemigo.';
     const stamina=combat.motor?.sprint;
-    if(stamina){(document.querySelector('#stamina') as HTMLProgressElement).value=stamina.stamina;document.querySelector('#stamina-state')!.textContent=`${stamina.exhausted?'AGOTADO':stamina.active?'CORRIENDO':stamina.stamina<100?'RECUPERANDO':'LISTO'} · ${Math.ceil(stamina.stamina)}`;}
+    if(stamina){const module=document.querySelector<HTMLElement>('.stamina-module')!;module.dataset.state=stamina.exhausted?'exhausted':stamina.active?'running':stamina.stamina<100?'recovering':'ready';(document.querySelector('#stamina') as HTMLProgressElement).value=stamina.stamina;document.querySelector('#stamina-state')!.textContent=`${stamina.exhausted?stamina.recovery>0?'AGOTADO · ESPERA':'AGOTADO · RECARGA LENTA':stamina.active?'CORRIENDO':stamina.stamina<100?'RECUPERANDO':'LISTO'} · ${Math.ceil(stamina.stamina)}`;}
     const signature = snapshots.map(s => `${s.state}:${s.remaining.toFixed(1)}`).join('|') + ':' + combat.health.toFixed(1) + ':' + combat.targets.map(t => t.health.toFixed(1)).join('|');
     if (signature === this.lastSignature) return; this.lastSignature = signature;
     for (const snapshot of snapshots) {

@@ -77,6 +77,11 @@ test('sprint PvP: resistencia propia, velocidad autoritativa y carrera del GLB',
   expect(await b.locator('#stamina').evaluate((e:HTMLProgressElement)=>e.value)).toBeLessThan(95);
   expect(await a.locator('#stamina').evaluate((e:HTMLProgressElement)=>e.value)).toBe(100);
   await b.screenshot({path:'docs/screenshots/stampede-pvp.png',fullPage:true});
+  await expect(b.locator('.stamina-module')).toHaveAttribute('data-state','exhausted',{timeout:20000});
+  await expect(b.locator('#stamina-state')).toContainText('AGOTADO');
+  expect(await b.locator('.stamina-module').evaluate(e=>getComputedStyle(e).color)).toBe('rgb(255, 133, 133)');
+  expect(await a.locator('#stamina').evaluate((e:HTMLProgressElement)=>e.value)).toBe(100);
   await b.keyboard.up('Shift');await b.keyboard.up('w');await b.keyboard.up('d');await expect.poll(async()=>parseFloat(await b.locator('#speed').innerText())).toBeLessThan(.1);
+  await expect(b.locator('#stamina-state')).toContainText('RECARGA LENTA',{timeout:7000});
  }finally{await one.close();await two.close();}
 });

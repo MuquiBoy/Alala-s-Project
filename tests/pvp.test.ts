@@ -51,4 +51,17 @@ describe('duelo autoritativo con las habilidades originales',()=>{
   expect(d.actors[0].motor!.speed).toBeLessThanOrEqual(.121);expect(d.actors[0].motor!.sprint.active).toBe(false);
   d.actors[1].health=0;step(d,1);d.vote(0);d.vote(1);expect(d.actors[0].motor!.sprint.stamina).toBe(100);d.dispose();
  });
+ it('sincroniza el agotamiento individual y bloquea carrera hasta 50 puntos',()=>{
+  const d=match();d.inputs[0].forward=1;d.inputs[0].sprint=true;step(d,600);
+  expect(d.snapshot().actors[0].sprint.exhausted).toBe(true);
+  expect(d.snapshot().actors[0].sprint.active).toBe(false);
+  expect(d.snapshot().actors[1].sprint.stamina).toBe(100);
+  step(d,150);expect(d.snapshot().actors[0].sprint.stamina).toBe(0);
+  step(d,180);expect(d.snapshot().actors[0].sprint.stamina).toBeCloseTo(24);
+  expect(d.snapshot().actors[0].sprint.exhausted).toBe(true);
+  step(d,195);expect(d.snapshot().actors[0].sprint.stamina).toBeCloseTo(50);
+  expect(d.snapshot().actors[0].sprint.exhausted).toBe(false);
+  step(d,1);expect(d.snapshot().actors[0].sprint.active).toBe(true);
+  d.dispose();
+ });
 });
